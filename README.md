@@ -11,7 +11,7 @@ This repository contains the documentation for the Mamatoto project. The Mamatot
 - Read the short introduction on how author documents in markdown using Quarto ([link](https://quarto.org/docs/authoring/markdown-basics.html))
 - Read the short introduction on how to use branches in the GitHub flow for version control ([link](https://docs.github.com/en/get-started/quickstart/github-flow)).
 - Read how to use the web IDE for GitHub ([link](https://docs.gitlab.com/ee/user/project/web_ide/))
-  - The short introduction to this workflow is that everyone works in their own branch, and changes to the document are merged into the `master` branch. This way, we can work on the document simultaneously without interfering with each other's work.
+  - The short introduction to this workflow is that everyone works in their own branch, and changes to the document are merged into the `main` branch. This way, we can work on the document simultaneously without interfering with each other's work.
 
 ### Working in the online editor
 
