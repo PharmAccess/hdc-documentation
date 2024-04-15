@@ -1,0 +1,55 @@
+project:
+  type: website
+  output-dir: _output
+  resources: 
+    - "assets/"
+
+website:
+  title: ""
+  navbar:
+    logo: logo-pharmaccess.png
+    background: white
+    logo-alt: "PharmAccess"
+    pinned: true
+    left:
+      - href: index.qmd
+        text: Introduction
+      - file: docs/whatsapp.qmd
+        text: WhatsApp
+      - file: docs/iol/index.qmd
+        text: IOL
+      - file: docs/shr.qmd
+        text: SHR
+    right:
+      - href: https://github.com/PharmAccess/hdc-documentation
+        text: GitHub
+
+  sidebar: 
+    - id: iol
+      title: IOL
+      style: "floating"
+      search: false
+      align: left
+      contents: 
+        - section: "IOL"
+          href: docs/iol/index.qmd
+          contents:
+            - section: "challenges"
+              contents: 
+                - file: docs/iol/challenges/keycloak_intergration.qmd
+                - file: docs/iol/challenges/fhir_web.qmd
+            - section: "sample"
+              contents: 
+                - file: docs/iol/sample/sample.qmd
+
+format:
+  html:
+    theme:
+      - litera
+      - theme/styles.scss
+    grid: 
+      gutter-width: 0.8rem
+      sidebar-width: 250px
+      body-width: 900px
+      margin-width: 300px
+    toc: true

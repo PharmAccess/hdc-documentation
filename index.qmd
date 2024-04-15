@@ -1,0 +1,16 @@
+---
+title: "Mamatoto: Instant HIE Implementation"
+subtitle: "An instant HIE implementation for LMIC that showcases data sharing for maternal care within a brick and click model"
+details: |
+  pharmaccess • Turn.io • Intellisoft
+sidebar: false
+toc: false
+page-layout: full
+format:
+  html:
+    template-partials:
+      - html/home/title-block.html
+program-logo: logo-pharmaccess.png #TODO: update to logo showing all partners
+---
+
+#TODO: add description with an image of whole architecture
