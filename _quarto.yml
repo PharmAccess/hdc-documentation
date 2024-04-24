@@ -14,6 +14,8 @@ website:
     left:
       - href: index.qmd
         text: Introduction
+      - href: docs/getting_started.qmd
+        text: Getting Started
       - file: docs/whatsapp.qmd
         text: WhatsApp
       - file: docs/iol/index.qmd
@@ -34,10 +36,13 @@ website:
         - section: "IOL"
           href: docs/iol/index.qmd
           contents:
-            - section: "challenges"
+            - section: "Challenges"
               contents: 
                 - file: docs/iol/challenges/keycloak_intergration.qmd
                 - file: docs/iol/challenges/fhir_web.qmd
+            - section: "Instant OpenHIE v2"
+              contents: 
+                - file: docs/iol/instant-v2/instant_v2.qmd
             - section: "sample"
               contents: 
                 - file: docs/iol/sample/sample.qmd
