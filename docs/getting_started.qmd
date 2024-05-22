@@ -1,0 +1,41 @@
+---
+title: "Getting Started"
+format: html
+---
+
+
+##### Pre-requisites.
+
+1. Docker - Instructions on how to install Docker can be found on the Docker website
+2. Instant OpenHIE v2 CLI - Installation instructions [here](https://jembi.gitbook.io/instant-v2/getting-started/quick-start): 
+
+##### Clone the repository
+
+`git clone https://github.com/IntelliSOFT-Consulting/MamaToto-HIE.git`
+
+
+##### Configuration.
+
+The `.env.example` file contains a sample configuration with all the required environment variables.
+Make a copy, as shown below and update the environment variables as desired.
+
+`cp .env.example .env`
+
+##### Running the setup.
+One you have the configuration right and the pre-requisites installed, simply run
+
+`instant package up -p mamatoto`
+
+This should spin up containers for the services listed below. 
+
+1. OpenHIM (Console + Core + MongoDB)
+2. HAPI FHIR JPA Server (HAPI + PostgreSQL)
+3. OpenHIM Mediators (Node.js Express app)
+4. Keycloak (Keycloak + Postgres)
+5. Nginx Proxy (Nginx)
+
+#### Stopping containers.
+Incase you need to stop the containers, simply run
+
+`instant package down -p mamatoto`
+
