@@ -1,0 +1,15 @@
+---
+title: "Shared Health Record"
+format: html
+---
+
+
+##### Background.
+In the spirit of adopting a FHIR native approach. The MamaToto HIE uses HAPI FHIR Server as it's Shared Health Record.
+
+
+#### MDM Configurations.
+To allow for unique Patient Identification 
+
+
+#### MDM Rules.

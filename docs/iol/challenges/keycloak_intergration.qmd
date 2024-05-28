@@ -1,3 +1,22 @@
 ---
-title: "Keycloak Intergration"
+title: "OpenHIM-Keycloak Intergration"
+format: html
+
 ---
+
+## Background
+
+The OpenHIM offers a few authentication mechanisms to verify client interactions with the OpenHIM Core. These mechanisms are JWT Tokens, Custom Tokens, Mutual TLS and Basic Auth. These Authentication mechanisms can be configured via JSON config files (see overview for more) or environment variables. The configured auth mechanisms will be displayed in the Client details section of the OpenHIM Console
+
+One of the useful features of OpenHIM is ability to use your own auth provides to configure.
+However, this is not a very straight-forward process as there lacks any documentation online on how to set this up or how to troubleshoot.
+
+### Solutions
+
+Thanks to the Jembi Systems team, we were able to identify and troubleshoot the most common issues around the setup.
+
+
+1. Keycloak Configurations.
+This setup heavily relies on Keycloak as the Identity Access Manager, 
+2. OpenHIM Configurations.
+3. Proxy Configurations.

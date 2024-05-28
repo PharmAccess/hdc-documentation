@@ -1,3 +1,17 @@
 ---
-title: "FHIR web"
+title: "FHIR Web"
+format: html
 ---
+
+
+##### Background
+FHIR Web is A web based interface for administering FHIR based digital health solutions
+Additionally its the most suitable inteface for the Shared Health Record which is the HAPI FHIR Server. 
+Setting up FHIR Web Version 3.1.3 is quite challenging given the limited documentation.
+
+
+#### Challenges
+1. Lack of documentation.
+   The project is not very well documented therefore
+
+2. Configuration.
