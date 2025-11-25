@@ -1,46 +1,607 @@
 ---
 title: "Technical Components"
-description: "Key systems used in Phase 1 implementation."
+description: "Key systems used in Phase 1 implementation with detailed architecture diagrams and configurations."
 ---
 
+# Phase 1 Technical Components
+
+This section provides detailed technical documentation for all components involved in the Phase 1 WhatsApp-based beneficiary enrollment system.
+
+## System Architecture Overview
+
+```{mermaid}
+graph TB
+    subgraph "User Interface Layer"
+        WA[WhatsApp Business API]
+        WB[WhatsApp Bot Interface]
+    end
+    
+    subgraph "Integration Layer"
+        WM[WhatsApp Mediator]
+        CM[Carepay Mediator]
+        FM[FHIR Mediator]
+    end
+    
+    subgraph "Core Services"
+        OHIM[OpenHIM Core]
+        KC[Keycloak IAM]
+        NGINX[Nginx Proxy]
+    end
+    
+    subgraph "Data Layer"
+        SHR[HAPI FHIR Server<br/>Shared Health Record]
+        CP[Carepay System]
+        MONGO[(MongoDB<br/>OpenHIM Data)]
+        POSTGRES[(PostgreSQL<br/>FHIR & Keycloak)]
+    end
+    
+    WA --> WB
+    WB --> WM
+    WM --> OHIM
+    OHIM --> CM
+    OHIM --> FM
+    
+    WM --> KC
+    CM --> KC
+    FM --> KC
+    
+    FM --> SHR
+    CM --> CP
+    SHR --> POSTGRES
+    KC --> POSTGRES
+    OHIM --> MONGO
+    
+    NGINX --> OHIM
+    NGINX --> KC
+    NGINX --> SHR
+    
+    classDef ui fill:#e3f2fd
+    classDef integration fill:#fff3e0
+    classDef core fill:#e8f5e8
+    classDef data fill:#f3e5f5
+    
+    class WA,WB ui
+    class WM,CM,FM integration
+    class OHIM,KC,NGINX core
+    class SHR,CP,MONGO,POSTGRES data
+```
+
 ## Interoperability Layer (IOL)
-The IOL serves as the backbone for data exchange between various systems in Phase 1, ensuring secure and efficient communication.
 
-### Key Features
-- Integration with SHR and Carepay.
-- Real-time synchronization of maternal health data.
+The IOL, built on OpenHIM, serves as the backbone for data exchange between various systems in Phase 1, ensuring secure and efficient communication with complete audit trails.
 
-### Example Configuration
+### OpenHIM Core Configuration
+
+**Core Features:**
+- Channel-based routing with configurable endpoints
+- JWT-based authentication integration with Keycloak
+- Transaction logging and monitoring
+- Mediator orchestration and management
+- RESTful API for configuration management
+
+**Environment Configuration:**
+```bash
+# OpenHIM Core Environment Variables
+MONGO_URL=mongodb://mongodb:27017/openhim
+MONGO_ATNAURL=mongodb://mongodb:27017/openhim
+NODE_ENV=production
+
+# API Configuration
+API_HOSTNAME=openhim.mamatoto.org
+API_PORT=8080
+API_HTTPS_PORT=8443
+
+# Authentication
+JWT_ISSUER=https://keycloak.mamatoto.org/auth/realms/mamatoto
+JWT_AUDIENCE=openhim-core
+```
+
+**Channel Configuration Example:**
 ```json
 {
-  "realm": "mamatoto",
-  "clientId": "openhim-client",
-  "authUrl": "https://keycloak.mamatoto.org/auth"
+  "name": "WhatsApp Enrollment Channel",
+  "description": "Channel for WhatsApp-based beneficiary enrollment",
+  "urlPattern": "^/whatsapp/enrollment.*$",
+  "allow": ["whatsapp-mediator-client"],
+  "methods": ["GET", "POST"],
+  "type": "http",
+  "authType": "jwt",
+  "routes": [
+    {
+      "name": "WhatsApp Mediator Route",
+      "host": "whatsapp-mediator",
+      "port": 3001,
+      "path": "",
+      "primary": true,
+      "type": "http"
+    }
+  ],
+  "requestBody": true,
+  "responseBody": true,
+  "rewriteUrls": false,
+  "autoRetry": true,
+  "autoRetryPeriodMinutes": 60,
+  "autoRetryMaxAttempts": 5
 }
+```
+
+### Integration Flow
+
+```{mermaid}
+sequenceDiagram
+    participant User as Pregnant Mother
+    participant WA as WhatsApp API
+    participant NGINX as Nginx Proxy
+    participant WM as WhatsApp Mediator
+    participant OHIM as OpenHIM Core
+    participant KC as Keycloak
+    participant SHR as FHIR Server
+    participant CP as Carepay
+    
+    User->>WA: Send WhatsApp message
+    WA->>NGINX: Webhook POST /whatsapp/webhook
+    NGINX->>WM: Forward request
+    
+    WM->>KC: Authenticate (client credentials)
+    KC-->>WM: JWT Access Token
+    
+    WM->>OHIM: Process enrollment request + JWT
+    OHIM->>KC: Validate JWT token
+    KC-->>OHIM: Token validation result
+    
+    alt Valid Authentication
+        OHIM->>SHR: Create/Update Patient FHIR resource
+        SHR-->>OHIM: Patient resource created
+        
+        OHIM->>CP: Create payment profile
+        CP-->>OHIM: Payment profile created
+        
+        OHIM-->>WM: Success response
+        WM->>WA: Send confirmation message
+        WA-->>User: Enrollment confirmation
+    else Authentication Failed
+        OHIM-->>WM: 401 Unauthorized
+        WM->>WA: Send error message
+        WA-->>User: Error notification
+    end
+    
+    Note over OHIM: All transactions logged<br/>with full audit trail
 ```
 
 ## Shared Health Record (SHR)
-The SHR acts as the central repository for all maternal healthcare data, enabling longitudinal tracking of patient records.
 
-### Key Features
-- FHIR-compliant data storage.
-- Accessibility for authorized healthcare providers.
+The SHR, implemented using HAPI FHIR Server, acts as the central repository for all maternal healthcare data, enabling longitudinal tracking of patient records with FHIR R4 compliance.
 
-### Example Payload
+### HAPI FHIR Server Configuration
+
+**Core Capabilities:**
+- Full FHIR R4 compliance with validation
+- PostgreSQL backend for scalability
+- RESTful API with comprehensive search capabilities
+- Resource versioning and history tracking
+- Subscription-based notifications
+- Bulk data export capabilities
+
+**Server Configuration:**
+```yaml
+# application.yaml
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres:5432/fhir
+    username: ${POSTGRES_USER}
+    password: ${POSTGRES_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+hapi:
+  fhir:
+    version: R4
+    server:
+      path: /fhir
+      name: MamaToto FHIR Server
+      server_address: https://fhir.mamatoto.org/fhir
+    
+    validation:
+      requests_enabled: true
+      responses_enabled: true
+    
+    subscription:
+      enabled: true
+      resthook_enabled: true
+      websocket_enabled: false
+    
+    cors:
+      enabled: true
+      allowed_origin:
+        - https://openhim.mamatoto.org
+        - https://keycloak.mamatoto.org
+```
+
+### FHIR Resource Structure
+
+**Patient Resource Example:**
 ```json
 {
   "resourceType": "Patient",
-  "id": "12345",
-  "name": [
-    { "family": "Doe", "given": ["Jane"] }
+  "id": "mamatoto-patient-001",
+  "meta": {
+    "versionId": "1",
+    "lastUpdated": "2024-01-15T10:30:00Z",
+    "profile": [
+      "http://mamatoto.org/fhir/StructureDefinition/MamaTotoPatient"
+    ]
+  },
+  "identifier": [
+    {
+      "use": "official",
+      "type": {
+        "coding": [
+          {
+            "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+            "code": "NI",
+            "display": "National identifier"
+          }
+        ]
+      },
+      "system": "http://mamatoto.org/patient-id",
+      "value": "MT-2024-001"
+    },
+    {
+      "use": "secondary",
+      "type": {
+        "coding": [
+          {
+            "system": "http://terminology.hl7.org/CodeSystem/v2-0203",
+            "code": "PPN",
+            "display": "Phone number"
+          }
+        ]
+      },
+      "system": "tel",
+      "value": "+254700000001"
+    }
   ],
-  "birthDate": "1990-01-01"
+  "active": true,
+  "name": [
+    {
+      "use": "official",
+      "family": "Wanjiku",
+      "given": ["Mary", "Grace"]
+    }
+  ],
+  "telecom": [
+    {
+      "system": "phone",
+      "value": "+254700000001",
+      "use": "mobile",
+      "rank": 1
+    }
+  ],
+  "gender": "female",
+  "birthDate": "1995-03-15",
+  "address": [
+    {
+      "use": "home",
+      "type": "physical",
+      "text": "Kibera, Nairobi County",
+      "city": "Nairobi",
+      "district": "Nairobi County",
+      "country": "KE"
+    }
+  ],
+  "contact": [
+    {
+      "relationship": [
+        {
+          "coding": [
+            {
+              "system": "http://terminology.hl7.org/CodeSystem/v2-0131",
+              "code": "C",
+              "display": "Emergency Contact"
+            }
+          ]
+        }
+      ],
+      "name": {
+        "family": "Kimani",
+        "given": ["John"]
+      },
+      "telecom": [
+        {
+          "system": "phone",
+          "value": "+254700000002"
+        }
+      ]
+    }
+  ],
+  "extension": [
+    {
+      "url": "http://mamatoto.org/fhir/StructureDefinition/enrollment-source",
+      "valueString": "whatsapp"
+    },
+    {
+      "url": "http://mamatoto.org/fhir/StructureDefinition/consent-status",
+      "valueString": "active"
+    }
+  ]
 }
 ```
 
-## Carepay
-Carepay ensures that financial transactions related to maternal healthcare are linked to clinical data, streamlining payment processes.
+**Coverage Resource for Payment Integration:**
+```json
+{
+  "resourceType": "Coverage",
+  "id": "mamatoto-coverage-001",
+  "meta": {
+    "versionId": "1",
+    "lastUpdated": "2024-01-15T10:35:00Z"
+  },
+  "identifier": [
+    {
+      "system": "http://carepay.com/coverage-id",
+      "value": "CP-MT-2024-001"
+    }
+  ],
+  "status": "active",
+  "type": {
+    "coding": [
+      {
+        "system": "http://terminology.hl7.org/CodeSystem/v3-ActCode",
+        "code": "EHCPOL",
+        "display": "extended healthcare"
+      }
+    ]
+  },
+  "beneficiary": {
+    "reference": "Patient/mamatoto-patient-001"
+  },
+  "period": {
+    "start": "2024-01-15",
+    "end": "2024-12-31"
+  },
+  "payor": [
+    {
+      "reference": "Organization/carepay-org"
+    }
+  ],
+  "class": [
+    {
+      "type": {
+        "coding": [
+          {
+            "system": "http://terminology.hl7.org/CodeSystem/coverage-class",
+            "code": "plan"
+          }
+        ]
+      },
+      "value": "maternal-care-basic",
+      "name": "MamaToto Basic Maternal Care Plan"
+    }
+  ]
+}
+```
 
-### Key Features
-- Automated tracking of financial transactions.
-- Integration with SHR to associate transactions with patient records.
+### Search and Query Capabilities
+
+The FHIR server supports comprehensive search operations:
+
+```bash
+# Search patients by phone number
+GET /fhir/Patient?telecom=+254700000001
+
+# Search patients enrolled via WhatsApp
+GET /fhir/Patient?_has:Coverage:beneficiary:payor.name=carepay
+
+# Get patient's complete care record
+GET /fhir/Patient/mamatoto-patient-001/$everything
+
+# Search recent enrollments
+GET /fhir/Patient?_lastUpdated=ge2024-01-01&_sort=-_lastUpdated
+```
+
+## Carepay Integration
+
+Carepay ensures that financial transactions related to maternal healthcare are linked to clinical data, streamlining payment processes and enabling value-based care delivery.
+
+### Integration Architecture
+
+```{mermaid}
+graph LR
+    subgraph "MamaToto HIE"
+        WM[WhatsApp Mediator]
+        CM[Carepay Mediator]
+        SHR[FHIR Server]
+    end
+    
+    subgraph "Carepay System"
+        CP_API[Carepay API]
+        CP_DB[(Carepay Database)]
+        CP_WALLET[Digital Wallet]
+    end
+    
+    subgraph "Payment Flow"
+        MOBILE[Mobile Money]
+        BANK[Banking System]
+        PROVIDER[Healthcare Provider]
+    end
+    
+    WM --> CM
+    CM --> CP_API
+    CP_API --> CP_DB
+    CP_API --> CP_WALLET
+    
+    CM --> SHR
+    
+    CP_WALLET --> MOBILE
+    CP_WALLET --> BANK
+    CP_WALLET --> PROVIDER
+    
+    classDef hie fill:#e8f5e8
+    classDef carepay fill:#fff3e0
+    classDef payment fill:#e3f2fd
+    
+    class WM,CM,SHR hie
+    class CP_API,CP_DB,CP_WALLET carepay
+    class MOBILE,BANK,PROVIDER payment
+```
+
+### Carepay API Integration
+
+**Key Endpoints:**
+- `POST /api/v1/subscribers` - Create subscriber profile
+- `GET /api/v1/subscribers/{id}` - Get subscriber details
+- `POST /api/v1/transactions` - Process payment transaction
+- `GET /api/v1/transactions/{id}` - Get transaction status
+- `POST /api/v1/claims` - Submit healthcare claim
+- `GET /api/v1/balance/{subscriber_id}` - Check wallet balance
+
+**Subscriber Creation Example:**
+```json
+{
+  "subscriber": {
+    "external_id": "mamatoto-patient-001",
+    "first_name": "Mary",
+    "last_name": "Wanjiku",
+    "phone_number": "+254700000001",
+    "date_of_birth": "1995-03-15",
+    "gender": "female",
+    "location": {
+      "county": "Nairobi",
+      "sub_county": "Kibera",
+      "ward": "Kibera East"
+    },
+    "enrollment_source": "whatsapp",
+    "plan_type": "maternal_care_basic",
+    "effective_date": "2024-01-15"
+  }
+}
+```
+
+**Payment Transaction Flow:**
+```json
+{
+  "transaction": {
+    "subscriber_id": "CP-MT-2024-001",
+    "provider_id": "PROV-001",
+    "service_code": "ANTENATAL_VISIT",
+    "amount": 500.00,
+    "currency": "KES",
+    "transaction_type": "service_payment",
+    "reference_number": "REF-2024-001",
+    "metadata": {
+      "fhir_encounter_id": "encounter-001",
+      "visit_date": "2024-01-20",
+      "diagnosis_codes": ["Z34.9"]
+    }
+  }
+}
+```
+
+## Authentication and Security
+
+### Keycloak Identity Management
+
+Keycloak provides centralized identity and access management with OAuth 2.0/OIDC compliance, supporting:
+
+- **Multi-realm support** with tenant isolation
+- **Role-based access control (RBAC)** with fine-grained permissions
+- **Single Sign-On (SSO)** across all HIE components
+- **Multi-factor authentication (MFA)** for enhanced security
+- **Social login integration** for user convenience
+- **Password policies** and account lockout protection
+
+**Realm Configuration:**
+```json
+{
+  "realm": "mamatoto",
+  "enabled": true,
+  "displayName": "MamaToto Health Information Exchange",
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "passwordPolicy": "length(8) and digits(2) and lowerCase(2) and upperCase(2) and specialChars(1)"
+}
+```
+
+### SSL/TLS Configuration
+
+All communications are secured using TLS 1.3 with properly configured certificates:
+
+**Certificate Structure:**
+- **Root CA**: MamaToto Root Certificate Authority
+- **Intermediate CA**: MamaToto Intermediate CA
+- **Server Certificates**: Individual certificates for each service
+- **Client Certificates**: For service-to-service authentication
+
+**Nginx SSL Configuration:**
+```nginx
+# SSL Configuration for MamaToto HIE
+ssl_protocols TLSv1.2 TLSv1.3;
+ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512:ECDHE-RSA-AES256-GCM-SHA384;
+ssl_prefer_server_ciphers off;
+ssl_session_cache shared:SSL:10m;
+ssl_session_timeout 10m;
+ssl_stapling on;
+ssl_stapling_verify on;
+
+# HSTS Header
+add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
+
+# Security Headers
+add_header X-Frame-Options "SAMEORIGIN" always;
+add_header X-Content-Type-Options "nosniff" always;
+add_header X-XSS-Protection "1; mode=block" always;
+add_header Referrer-Policy "strict-origin-when-cross-origin" always;
+```
+
+## Monitoring and Observability
+
+### Health Check Endpoints
+
+Each component exposes standardized health check endpoints:
+
+- **OpenHIM Core**: `GET /heartbeat`
+- **FHIR Server**: `GET /fhir/metadata`
+- **Keycloak**: `GET /auth/realms/mamatoto`
+- **WhatsApp Mediator**: `GET /health`
+- **Carepay Mediator**: `GET /health`
+
+### Logging and Audit
+
+**Structured Logging Format:**
+```json
+{
+  "timestamp": "2024-01-15T10:30:00.000Z",
+  "level": "INFO",
+  "service": "whatsapp-mediator",
+  "transaction_id": "txn-12345",
+  "user_id": "user-67890",
+  "action": "patient_enrollment",
+  "resource_type": "Patient",
+  "resource_id": "mamatoto-patient-001",
+  "result": "success",
+  "duration_ms": 250,
+  "metadata": {
+    "phone_number": "+254700000001",
+    "enrollment_source": "whatsapp"
+  }
+}
+```
+
+### Performance Metrics
+
+Key performance indicators tracked across all components:
+
+- **Response Time**: 95th percentile < 500ms
+- **Throughput**: Requests per second per service
+- **Error Rate**: < 1% for critical operations
+- **Availability**: > 99.9% uptime
+- **Data Quality**: FHIR validation success rate > 99%
+
+This comprehensive technical documentation provides the foundation for understanding, deploying, and maintaining the Phase 1 MamaToto HIE implementation.

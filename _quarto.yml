@@ -18,6 +18,10 @@ website:
         text: Getting Started
       - file: docs/phase1/phase1.qmd
         text: Beneficiary Enrollment
+      - file: docs/architecture/system-overview.qmd
+        text: Architecture
+      - file: docs/mediators/overview.qmd
+        text: Mediators
       - file: docs/whatsapp.qmd
         text: WhatsApp
       - file: docs/rationale.qmd
@@ -61,11 +65,15 @@ website:
         - section: "IOL"
           href: docs/iol/index.qmd
           contents:
+            - file: docs/mediators/overview.qmd
+              text: "Mediators Overview"
+            - file: docs/ssl/certificate-management.qmd
+              text: "SSL/TLS Management"
             - section: "Challenges"
               contents: 
                 - file: docs/iol/challenges/keycloak_intergration.qmd
                 - file: docs/iol/challenges/fhir_web.qmd
-            - file: docs/iol/iol-customization/iol-customizations.qmd
+            - file: docs/iol/iol-customization/iol-customization.qmd
               text: "IOL Customisation"
             - section: "Instant OpenHIE v2"
               contents: 
@@ -83,3 +91,5 @@ format:
       body-width: 900px
       margin-width: 300px
     toc: true
+    mermaid:
+      theme: default

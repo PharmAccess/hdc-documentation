@@ -1,0 +1,379 @@
+---
+title: "System Architecture Overview"
+description: "Comprehensive architectural diagrams and system design for MamaToto HIE"
+sidebar: false
+---
+
+# MamaToto HIE System Architecture
+
+## High-Level Architecture
+
+The MamaToto Health Information Exchange (HIE) implements an OpenHIE-compliant architecture supporting maternal healthcare workflows through WhatsApp-based beneficiary enrollment.
+
+```{mermaid}
+%%| fig-width: 12
+%%| fig-height: 10
+graph TB
+    subgraph "External Systems"
+        WA[WhatsApp Business API]
+        CP[Carepay Payment System]
+        EXT[External Healthcare Providers]
+    end
+    
+    subgraph "Presentation Layer"
+        WB[WhatsApp Bot Interface]
+        WEB[Web Console]
+        API[REST API Endpoints]
+    end
+    
+    subgraph "Interoperability Layer (IOL)"
+        subgraph "OpenHIM Core"
+            CORE[OpenHIM Core]
+            CONSOLE[OpenHIM Console]
+        end
+        
+        subgraph "Mediators"
+            WM[WhatsApp Mediator]
+            CM[Carepay Mediator]
+            FM[FHIR Mediator]
+            AM[Auth Mediator]
+        end
+    end
+    
+    subgraph "Authentication & Authorization"
+        KC[Keycloak Identity Provider]
+        JWT[JWT Token Service]
+    end
+    
+    subgraph "Data Layer"
+        SHR[Shared Health Record<br/>HAPI FHIR Server]
+        MONGO[(MongoDB<br/>OpenHIM Data)]
+        POSTGRES[(PostgreSQL<br/>FHIR Data)]
+        KCDB[(PostgreSQL<br/>Keycloak Data)]
+    end
+    
+    subgraph "Infrastructure"
+        NGINX[Nginx Reverse Proxy]
+        DOCKER[Docker Containers]
+        GCP[Google Cloud Platform]
+    end
+    
+    %% External connections
+    WA --> WB
+    CP --> CM
+    EXT --> API
+    
+    %% Presentation to IOL
+    WB --> WM
+    WEB --> CONSOLE
+    API --> CORE
+    
+    %% IOL internal connections
+    CORE --> WM
+    CORE --> CM
+    CORE --> FM
+    CORE --> AM
+    CONSOLE --> CORE
+    
+    %% Authentication flows
+    WM --> KC
+    CM --> KC
+    FM --> KC
+    AM --> KC
+    KC --> JWT
+    
+    %% Data flows
+    WM --> SHR
+    CM --> SHR
+    FM --> SHR
+    CORE --> MONGO
+    SHR --> POSTGRES
+    KC --> KCDB
+    
+    %% Infrastructure
+    NGINX --> CORE
+    NGINX --> CONSOLE
+    NGINX --> KC
+    NGINX --> SHR
+    
+    classDef external fill:#ffeeee
+    classDef presentation fill:#eeeeff
+    classDef iol fill:#eeffee
+    classDef auth fill:#ffffee
+    classDef data fill:#ffeeff
+    classDef infra fill:#f0f0f0
+    
+    class WA,CP,EXT external
+    class WB,WEB,API presentation
+    class CORE,CONSOLE,WM,CM,FM,AM iol
+    class KC,JWT auth
+    class SHR,MONGO,POSTGRES,KCDB data
+    class NGINX,DOCKER,GCP infra
+```
+
+## Component Architecture
+
+### 1. WhatsApp Integration Flow
+
+```{mermaid}
+sequenceDiagram
+    participant User as Pregnant Mother
+    participant WA as WhatsApp Business API
+    participant WM as WhatsApp Mediator
+    participant KC as Keycloak
+    participant SHR as FHIR Server
+    participant CP as Carepay
+    
+    User->>WA: Send message
+    WA->>WM: Webhook notification
+    WM->>KC: Authenticate request
+    KC-->>WM: JWT Token
+    
+    alt Registration Flow
+        WM->>SHR: Create Patient resource
+        SHR-->>WM: Patient ID
+        WM->>CP: Create payment profile
+        CP-->>WM: Payment ID
+    else Information Request
+        WM->>SHR: Query patient data
+        SHR-->>WM: Patient information
+    end
+    
+    WM->>WA: Send response
+    WA->>User: Deliver message
+```
+
+### 2. FHIR Data Flow
+
+```{mermaid}
+graph LR
+    subgraph "FHIR Resources"
+        P[Patient]
+        E[Encounter]
+        O[Observation]
+        PR[Practitioner]
+        ORG[Organization]
+        COV[Coverage]
+    end
+    
+    subgraph "Data Sources"
+        WB[WhatsApp Bot]
+        HP[Healthcare Providers]
+        CP[Carepay System]
+    end
+    
+    subgraph "Processing"
+        VM[Validation Mediator]
+        TM[Transform Mediator]
+        PM[Persistence Mediator]
+    end
+    
+    WB --> VM
+    HP --> VM
+    CP --> VM
+    
+    VM --> TM
+    TM --> PM
+    
+    PM --> P
+    PM --> E
+    PM --> O
+    PM --> PR
+    PM --> ORG
+    PM --> COV
+    
+    classDef fhir fill:#e1f5fe
+    classDef source fill:#f3e5f5
+    classDef process fill:#e8f5e8
+    
+    class P,E,O,PR,ORG,COV fhir
+    class WB,HP,CP source
+    class VM,TM,PM process
+```
+
+### 3. Security Architecture
+
+```{mermaid}
+graph TB
+    subgraph "External Access"
+        CLIENT[Client Applications]
+        WA[WhatsApp Webhook]
+    end
+    
+    subgraph "Security Layer"
+        NGINX[Nginx SSL Termination]
+        WAF[Web Application Firewall]
+        RATE[Rate Limiting]
+    end
+    
+    subgraph "Authentication"
+        KC[Keycloak]
+        OAUTH[OAuth 2.0 / OIDC]
+        JWT[JWT Validation]
+    end
+    
+    subgraph "Authorization"
+        RBAC[Role-Based Access Control]
+        SCOPE[API Scopes]
+        POLICY[Policy Engine]
+    end
+    
+    subgraph "Audit & Monitoring"
+        AUDIT[Audit Logs]
+        METRICS[Metrics Collection]
+        ALERTS[Security Alerts]
+    end
+    
+    CLIENT --> NGINX
+    WA --> NGINX
+    
+    NGINX --> WAF
+    WAF --> RATE
+    RATE --> KC
+    
+    KC --> OAUTH
+    OAUTH --> JWT
+    JWT --> RBAC
+    
+    RBAC --> SCOPE
+    SCOPE --> POLICY
+    
+    POLICY --> AUDIT
+    AUDIT --> METRICS
+    METRICS --> ALERTS
+    
+    classDef security fill:#ffebee
+    classDef auth fill:#fff3e0
+    classDef authz fill:#e8f5e8
+    classDef monitor fill:#f3e5f5
+    
+    class NGINX,WAF,RATE security
+    class KC,OAUTH,JWT auth
+    class RBAC,SCOPE,POLICY authz
+    class AUDIT,METRICS,ALERTS monitor
+```
+
+## Deployment Architecture
+
+### Google Cloud Platform Deployment
+
+```{mermaid}
+graph TB
+    subgraph "GCP Project"
+        subgraph "Compute Engine"
+            VM1[VM Instance 1<br/>OpenHIM + Mediators]
+            VM2[VM Instance 2<br/>FHIR + Keycloak]
+        end
+        
+        subgraph "Cloud SQL"
+            PSQL[PostgreSQL Instance<br/>FHIR + Keycloak Data]
+        end
+        
+        subgraph "Networking"
+            VPC[Virtual Private Cloud]
+            LB[Load Balancer]
+            FW[Firewall Rules]
+            SSL[SSL Certificates]
+        end
+        
+        subgraph "Storage"
+            GCS[Cloud Storage<br/>Backups & Logs]
+        end
+        
+        subgraph "Monitoring"
+            MON[Cloud Monitoring]
+            LOG[Cloud Logging]
+        end
+    end
+    
+    subgraph "External"
+        WA[WhatsApp Business API]
+        CP[Carepay API]
+        DNS[Cloud DNS]
+    end
+    
+    DNS --> LB
+    LB --> SSL
+    SSL --> FW
+    FW --> VM1
+    FW --> VM2
+    
+    VM1 --> PSQL
+    VM2 --> PSQL
+    
+    VM1 --> GCS
+    VM2 --> GCS
+    
+    VM1 --> MON
+    VM2 --> MON
+    VM1 --> LOG
+    VM2 --> LOG
+    
+    WA --> LB
+    CP --> LB
+    
+    classDef compute fill:#e3f2fd
+    classDef data fill:#f3e5f5
+    classDef network fill:#e8f5e8
+    classDef external fill:#fff3e0
+    
+    class VM1,VM2 compute
+    class PSQL,GCS data
+    class VPC,LB,FW,SSL,DNS network
+    class WA,CP external
+```
+
+## Key Architectural Decisions
+
+### 1. OpenHIE Compliance
+- **Decision**: Implement full OpenHIE architecture with standardized components
+- **Rationale**: Ensures interoperability and follows global health informatics standards
+- **Impact**: Standardized data exchange, easier integration with other health systems
+
+### 2. FHIR R4 Standard
+- **Decision**: Use FHIR R4 as the primary data exchange standard
+- **Rationale**: Industry standard for healthcare data interoperability
+- **Impact**: Structured data, better data quality, easier integration
+
+### 3. Microservices with Mediators
+- **Decision**: Implement mediator pattern for system integration
+- **Rationale**: Loose coupling, easier maintenance, better scalability
+- **Impact**: Independent deployment, better fault isolation
+
+### 4. Keycloak for Identity Management
+- **Decision**: Use Keycloak as the centralized identity provider
+- **Rationale**: Open-source, OAuth 2.0/OIDC compliant, enterprise-ready
+- **Impact**: Centralized authentication, better security, SSO capabilities
+
+### 5. WhatsApp as Primary UI
+- **Decision**: Use WhatsApp Business API as the main user interface
+- **Rationale**: High adoption rate in target demographics, familiar user experience
+- **Impact**: Better user engagement, reduced training requirements
+
+## Performance Considerations
+
+### Scalability Patterns
+- **Horizontal scaling**: Multiple mediator instances behind load balancer
+- **Database sharding**: Partition FHIR data by organization or region
+- **Caching**: Redis for frequently accessed patient data
+- **Async processing**: Message queues for non-critical operations
+
+### High Availability
+- **Multi-zone deployment**: Deploy across multiple GCP zones
+- **Database clustering**: PostgreSQL with read replicas
+- **Circuit breakers**: Prevent cascade failures
+- **Health checks**: Automated monitoring and failover
+
+## Security Considerations
+
+### Data Protection
+- **Encryption at rest**: All databases encrypted
+- **Encryption in transit**: TLS 1.3 for all communications
+- **Data anonymization**: Remove PII from logs and metrics
+- **Backup encryption**: Encrypted backups in Cloud Storage
+
+### Access Control
+- **Principle of least privilege**: Minimal required permissions
+- **API rate limiting**: Prevent abuse and DoS attacks
+- **Audit logging**: Complete audit trail for all data access
+- **Regular security reviews**: Quarterly security assessments

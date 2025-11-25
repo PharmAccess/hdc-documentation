@@ -1,28 +1,475 @@
 ---
 title: "OpenHIM-Keycloak Integration"
+description: "Complete guide to integrating Keycloak with OpenHIM for authentication and authorization"
 format: html
-
 ---
 
-## Background
+# OpenHIM-Keycloak Integration
 
-The OpenHIM offers a few authentication mechanisms to verify client interactions with the OpenHIM Core. These mechanisms are 
-1. JWT Tokens
-2. Custom Tokens
-3. Mutual TLS 
-4. Basic Auth. 
+## Overview
 
-These Authentication mechanisms can be configured via JSON config files (see overview for more) or environment variables. The configured auth mechanisms will be displayed in the Client details section of the OpenHIM Console.
+The MamaToto HIE uses Keycloak as the centralized Identity and Access Management (IAM) solution, providing OAuth 2.0/OIDC-compliant authentication for all system components. This integration enables secure, standardized authentication across the entire health information exchange.
 
-One of the useful features of OpenHIM is ability to use your own auth provides to configure.
-However, this is not a very straight-forward process as there lacks any documentation online on how to set this up or how to troubleshoot.
+## Architecture
 
-### Solutions
+```{mermaid}
+graph TB
+    subgraph "Client Applications"
+        WA[WhatsApp Mediator]
+        WEB[Web Console]
+        API[External APIs]
+        MOBILE[Mobile Apps]
+    end
+    
+    subgraph "Authentication Layer"
+        KC[Keycloak Server]
+        REALM[MamaToto Realm]
+        CLIENTS[OAuth Clients]
+    end
+    
+    subgraph "OpenHIM Core"
+        CORE[OpenHIM Core]
+        AUTH[Auth Middleware]
+        CHANNELS[Channel Router]
+    end
+    
+    subgraph "Protected Resources"
+        FHIR[FHIR Server]
+        MEDIATORS[Mediators]
+        DB[(Databases)]
+    end
+    
+    WA --> KC
+    WEB --> KC
+    API --> KC
+    MOBILE --> KC
+    
+    KC --> REALM
+    REALM --> CLIENTS
+    
+    KC --> AUTH
+    AUTH --> CORE
+    CORE --> CHANNELS
+    
+    CHANNELS --> FHIR
+    CHANNELS --> MEDIATORS
+    CHANNELS --> DB
+    
+    classDef client fill:#e3f2fd
+    classDef auth fill:#fff3e0
+    classDef openhim fill:#e8f5e8
+    classDef resource fill:#f3e5f5
+    
+    class WA,WEB,API,MOBILE client
+    class KC,REALM,CLIENTS auth
+    class CORE,AUTH,CHANNELS openhim
+    class FHIR,MEDIATORS,DB resource
+```
 
-Thanks to the Jembi Systems team, we were able to identify and troubleshoot the most common issues around the setup.
+## Keycloak Configuration
 
+### 1. Realm Setup
 
-1. Keycloak Configurations.
-This setup heavily relies on Keycloak as the Identity Access Manager, 
-2. OpenHIM Configurations.
-3. Proxy Configurations.
+The MamaToto realm is configured with the following settings:
+
+```json
+{
+  "realm": "mamatoto",
+  "enabled": true,
+  "displayName": "MamaToto HIE",
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": true,
+  "permanentLockout": false,
+  "maxFailureWaitSeconds": 900,
+  "minimumQuickLoginWaitSeconds": 60,
+  "waitIncrementSeconds": 60,
+  "quickLoginCheckMilliSeconds": 1000,
+  "maxDeltaTimeSeconds": 43200,
+  "failureFactor": 30
+}
+```
+
+### 2. Client Configuration
+
+#### OpenHIM Client
+```json
+{
+  "clientId": "openhim-core",
+  "name": "OpenHIM Core Client",
+  "enabled": true,
+  "clientAuthenticatorType": "client-secret",
+  "secret": "your-secure-client-secret",
+  "redirectUris": [
+    "https://openhim.mamatoto.org/authenticate/*",
+    "https://openhim.mamatoto.org/callback"
+  ],
+  "webOrigins": [
+    "https://openhim.mamatoto.org"
+  ],
+  "protocol": "openid-connect",
+  "publicClient": false,
+  "bearerOnly": false,
+  "serviceAccountsEnabled": true,
+  "authorizationServicesEnabled": true,
+  "directAccessGrantsEnabled": true,
+  "implicitFlowEnabled": false,
+  "standardFlowEnabled": true
+}
+```
+
+#### WhatsApp Mediator Client
+```json
+{
+  "clientId": "whatsapp-mediator",
+  "name": "WhatsApp Mediator Client",
+  "enabled": true,
+  "clientAuthenticatorType": "client-secret",
+  "secret": "whatsapp-mediator-secret",
+  "serviceAccountsEnabled": true,
+  "authorizationServicesEnabled": false,
+  "directAccessGrantsEnabled": true,
+  "publicClient": false
+}
+```
+
+### 3. User Roles and Groups
+
+```{mermaid}
+graph TB
+    subgraph "Realm Roles"
+        ADMIN[hie-admin]
+        PROVIDER[healthcare-provider]
+        OPERATOR[system-operator]
+        USER[end-user]
+    end
+    
+    subgraph "Client Roles"
+        subgraph "OpenHIM Roles"
+            OHIM_ADMIN[openhim-admin]
+            OHIM_USER[openhim-user]
+        end
+        
+        subgraph "FHIR Roles"
+            FHIR_READ[fhir-read]
+            FHIR_WRITE[fhir-write]
+            FHIR_ADMIN[fhir-admin]
+        end
+    end
+    
+    subgraph "Groups"
+        ADMINS[System Administrators]
+        PROVIDERS[Healthcare Providers]
+        OPERATORS[System Operators]
+    end
+    
+    ADMIN --> OHIM_ADMIN
+    ADMIN --> FHIR_ADMIN
+    PROVIDER --> FHIR_READ
+    PROVIDER --> FHIR_WRITE
+    OPERATOR --> OHIM_USER
+    OPERATOR --> FHIR_READ
+    
+    ADMINS --> ADMIN
+    PROVIDERS --> PROVIDER
+    OPERATORS --> OPERATOR
+    
+    classDef realm fill:#e3f2fd
+    classDef client fill:#fff3e0
+    classDef group fill:#e8f5e8
+    
+    class ADMIN,PROVIDER,OPERATOR,USER realm
+    class OHIM_ADMIN,OHIM_USER,FHIR_READ,FHIR_WRITE,FHIR_ADMIN client
+    class ADMINS,PROVIDERS,OPERATORS group
+```
+
+## OpenHIM Configuration
+
+### 1. Authentication Methods
+
+OpenHIM supports multiple authentication mechanisms. For the MamaToto HIE, we use JWT tokens from Keycloak:
+
+```javascript
+// OpenHIM Core configuration
+{
+  "authenticationTypes": ["jwt"],
+  "jwt": {
+    "algorithms": ["RS256"],
+    "audience": "openhim-core",
+    "issuer": "https://keycloak.mamatoto.org/auth/realms/mamatoto",
+    "secretOrKey": "-----BEGIN PUBLIC KEY-----\n...\n-----END PUBLIC KEY-----",
+    "secretOrKeyFile": "/etc/openhim/keycloak-public-key.pem"
+  }
+}
+```
+
+### 2. Client Authentication
+
+```json
+{
+  "clientID": "whatsapp-mediator",
+  "name": "WhatsApp Mediator Client",
+  "roles": ["whatsapp-user"],
+  "passwordAlgorithm": "sha512",
+  "passwordHash": "hashed-password",
+  "passwordSalt": "random-salt",
+  "cert": "-----BEGIN CERTIFICATE-----\n...\n-----END CERTIFICATE-----",
+  "customTokenID": "custom-token-123",
+  "customTokenExpiry": "2024-12-31T23:59:59.000Z"
+}
+```
+
+### 3. Channel Configuration
+
+```json
+{
+  "name": "WhatsApp Channel",
+  "urlPattern": "^/whatsapp.*$",
+  "allow": ["whatsapp-mediator"],
+  "methods": ["GET", "POST"],
+  "type": "http",
+  "authType": "jwt",
+  "whitelist": [],
+  "routes": [
+    {
+      "name": "WhatsApp Mediator Route",
+      "host": "whatsapp-mediator",
+      "port": 3001,
+      "path": "",
+      "primary": true,
+      "type": "http"
+    }
+  ]
+}
+```
+
+## Integration Flow
+
+### 1. JWT Token Authentication Flow
+
+```{mermaid}
+sequenceDiagram
+    participant Client as Client Application
+    participant KC as Keycloak
+    participant OHIM as OpenHIM Core
+    participant MED as Mediator
+    participant FHIR as FHIR Server
+    
+    Client->>KC: Login request (username/password)
+    KC-->>Client: Access token (JWT)
+    
+    Client->>OHIM: API request + JWT token
+    OHIM->>KC: Validate JWT token
+    KC-->>OHIM: Token validation result
+    
+    alt Valid Token
+        OHIM->>MED: Forward request
+        MED->>FHIR: Process request
+        FHIR-->>MED: Response
+        MED-->>OHIM: Response
+        OHIM-->>Client: Final response
+    else Invalid Token
+        OHIM-->>Client: 401 Unauthorized
+    end
+```
+
+### 2. Service Account Flow
+
+```{mermaid}
+sequenceDiagram
+    participant MED as Mediator
+    participant KC as Keycloak
+    participant OHIM as OpenHIM Core
+    participant FHIR as FHIR Server
+    
+    Note over MED: Service startup
+    MED->>KC: Client credentials grant
+    KC-->>MED: Access token
+    
+    Note over MED: API request
+    MED->>OHIM: Request + Bearer token
+    OHIM->>KC: Validate token
+    KC-->>OHIM: Token valid
+    OHIM->>FHIR: Forward request
+    FHIR-->>OHIM: Response
+    OHIM-->>MED: Response
+```
+
+## Environment Configuration
+
+### Keycloak Environment Variables
+
+```bash
+# Keycloak Database
+KC_DB=postgres
+KC_DB_URL=jdbc:postgresql://postgres:5432/keycloak
+KC_DB_USERNAME=keycloak
+KC_DB_PASSWORD=secure_password
+
+# Keycloak Admin
+KEYCLOAK_ADMIN=admin
+KEYCLOAK_ADMIN_PASSWORD=admin_password
+
+# Keycloak Configuration
+KC_HOSTNAME=keycloak.mamatoto.org
+KC_HTTP_ENABLED=false
+KC_HOSTNAME_STRICT=false
+KC_PROXY=edge
+
+# SSL Configuration
+KC_HTTPS_CERTIFICATE_FILE=/opt/keycloak/ssl/cert.pem
+KC_HTTPS_CERTIFICATE_KEY_FILE=/opt/keycloak/ssl/key.pem
+```
+
+### OpenHIM Environment Variables
+
+```bash
+# Authentication
+OPENHIM_JWT_ISSUER=https://keycloak.mamatoto.org/auth/realms/mamatoto
+OPENHIM_JWT_AUDIENCE=openhim-core
+OPENHIM_JWT_PUBLIC_KEY_FILE=/etc/openhim/keycloak-public-key.pem
+
+# Database
+MONGO_URL=mongodb://mongodb:27017/openhim
+MONGO_ATNAURL=mongodb://mongodb:27017/openhim
+
+# API Configuration
+OPENHIM_API_HOSTNAME=openhim-core.mamatoto.org
+OPENHIM_API_PORT=8080
+OPENHIM_API_HTTPS_PORT=8443
+```
+
+## SSL/TLS Configuration
+
+### 1. Certificate Management
+
+```bash
+#!/bin/bash
+# SSL certificate setup script
+
+# Create certificate directory
+mkdir -p /opt/ssl/certs
+
+# Generate private key
+openssl genrsa -out /opt/ssl/certs/server.key 2048
+
+# Generate certificate signing request
+openssl req -new -key /opt/ssl/certs/server.key -out /opt/ssl/certs/server.csr \
+  -subj "/C=KE/ST=Nairobi/L=Nairobi/O=PharmAccess/CN=*.mamatoto.org"
+
+# Generate self-signed certificate (for development)
+openssl x509 -req -days 365 -in /opt/ssl/certs/server.csr \
+  -signkey /opt/ssl/certs/server.key -out /opt/ssl/certs/server.crt
+
+# Set appropriate permissions
+chmod 600 /opt/ssl/certs/server.key
+chmod 644 /opt/ssl/certs/server.crt
+```
+
+### 2. Nginx SSL Configuration
+
+```nginx
+server {
+    listen 443 ssl http2;
+    server_name keycloak.mamatoto.org;
+
+    ssl_certificate /opt/ssl/certs/server.crt;
+    ssl_certificate_key /opt/ssl/certs/server.key;
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512;
+    ssl_prefer_server_ciphers off;
+
+    location / {
+        proxy_pass http://keycloak:8080;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+}
+```
+
+## Troubleshooting
+
+### Common Issues and Solutions
+
+#### 1. JWT Token Validation Failures
+
+**Problem**: OpenHIM returns 401 Unauthorized despite valid token
+**Solution**:
+- Verify Keycloak public key is correctly configured in OpenHIM
+- Check token issuer and audience claims
+- Ensure clock synchronization between Keycloak and OpenHIM servers
+
+```bash
+# Extract public key from Keycloak
+curl -s https://keycloak.mamatoto.org/auth/realms/mamatoto | jq -r '.public_key' | \
+  sed 's/^/-----BEGIN PUBLIC KEY-----\n/' | \
+  sed 's/$/\n-----END PUBLIC KEY-----/' > keycloak-public-key.pem
+```
+
+#### 2. Client Authentication Failures
+
+**Problem**: Mediators cannot authenticate with Keycloak
+**Solution**:
+- Verify client ID and secret configuration
+- Check client authentication method (client_secret_post vs client_secret_basic)
+- Ensure service accounts are enabled for machine-to-machine communication
+
+#### 3. SSL Certificate Issues
+
+**Problem**: SSL handshake failures between components
+**Solution**:
+- Verify certificate chain completeness
+- Check certificate expiration dates
+- Ensure proper certificate authority trust
+
+```bash
+# Test SSL connection
+openssl s_client -connect keycloak.mamatoto.org:443 -servername keycloak.mamatoto.org
+```
+
+### Monitoring and Maintenance
+
+#### Health Checks
+
+```bash
+#!/bin/bash
+# Keycloak health check script
+
+KEYCLOAK_URL="https://keycloak.mamatoto.org"
+REALM="mamatoto"
+
+# Check Keycloak availability
+if curl -f -s "${KEYCLOAK_URL}/auth/realms/${REALM}" > /dev/null; then
+    echo "Keycloak is healthy"
+else
+    echo "Keycloak is unhealthy"
+    exit 1
+fi
+
+# Check OpenHIM authentication
+if curl -f -s -H "Authorization: Bearer ${JWT_TOKEN}" \
+   "https://openhim.mamatoto.org:8080/heartbeat" > /dev/null; then
+    echo "OpenHIM authentication is working"
+else
+    echo "OpenHIM authentication failed"
+    exit 1
+fi
+```
+
+#### Performance Tuning
+
+```bash
+# Keycloak JVM settings
+JAVA_OPTS="-Xms1024m -Xmx2048m -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
+
+# Database connection pool
+KC_DB_POOL_INITIAL_SIZE=5
+KC_DB_POOL_MAX_SIZE=20
+KC_DB_POOL_MIN_SIZE=5
+```
