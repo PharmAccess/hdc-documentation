@@ -1,0 +1,515 @@
+---
+title: "OpenHIM Mediators Overview"
+description: "Comprehensive guide to all mediators in the MamaToto HIE system"
+sidebar: iol
+---
+
+# OpenHIM Mediators
+
+Mediators are the core integration components in the MamaToto HIE system, implementing the mediator pattern to facilitate communication between different systems while maintaining loose coupling and high maintainability.
+
+## Mediator Architecture Pattern
+
+```{mermaid}
+graph LR
+    subgraph "External Systems"
+        EXT1[WhatsApp Business API]
+        EXT2[Carepay System]
+        EXT3[Healthcare Providers]
+    end
+    
+    subgraph "OpenHIM Core"
+        CORE[OpenHIM Core<br/>Routing Engine]
+    end
+    
+    subgraph "Mediators"
+        WM[WhatsApp Mediator]
+        CM[Carepay Mediator]
+        FM[FHIR Mediator]
+        AM[Auth Mediator]
+        NM[Notification Mediator]
+    end
+    
+    subgraph "Target Systems"
+        SHR[FHIR Server<br/>Shared Health Record]
+        KC[Keycloak<br/>Identity Provider]
+        DB[(Database)]
+    end
+    
+    EXT1 --> CORE
+    EXT2 --> CORE
+    EXT3 --> CORE
+    
+    CORE --> WM
+    CORE --> CM
+    CORE --> FM
+    CORE --> AM
+    CORE --> NM
+    
+    WM --> SHR
+    CM --> SHR
+    FM --> SHR
+    AM --> KC
+    NM --> DB
+    
+    classDef external fill:#ffeeee
+    classDef core fill:#eeeeff
+    classDef mediator fill:#eeffee
+    classDef target fill:#ffffee
+    
+    class EXT1,EXT2,EXT3 external
+    class CORE core
+    class WM,CM,FM,AM,NM mediator
+    class SHR,KC,DB target
+```
+
+## Core Mediators
+
+### 1. WhatsApp Mediator
+
+**Purpose**: Handles all WhatsApp Business API interactions for maternal health workflows.
+
+**Key Responsibilities**:
+- Process incoming WhatsApp webhook notifications
+- Manage conversational flows for beneficiary enrollment
+- Transform WhatsApp messages to FHIR resources
+- Handle consent management workflows
+- Integrate with Carepay for payment processing
+
+**Configuration**:
+```json
+{
+  "urn": "urn:mediator:whatsapp-mediator",
+  "version": "1.0.0",
+  "name": "WhatsApp Mediator",
+  "description": "Mediator for WhatsApp Business API integration",
+  "endpoints": [
+    {
+      "name": "WhatsApp Webhook",
+      "host": "localhost",
+      "port": "3001",
+      "path": "/webhook",
+      "type": "http"
+    }
+  ],
+  "defaultChannelConfig": [
+    {
+      "name": "WhatsApp Channel",
+      "urlPattern": "^/whatsapp.*$",
+      "routes": [
+        {
+          "name": "WhatsApp Mediator Route",
+          "host": "whatsapp-mediator",
+          "port": "3001",
+          "path": "",
+          "pathTransform": "",
+          "primary": true,
+          "type": "http"
+        }
+      ],
+      "allow": ["whatsapp-client"],
+      "methods": ["GET", "POST"],
+      "type": "http"
+    }
+  ]
+}
+```
+
+**Workflow Process**:
+```{mermaid}
+sequenceDiagram
+    participant WA as WhatsApp Business API
+    participant WM as WhatsApp Mediator
+    participant FHIR as FHIR Server
+    participant CP as Carepay
+    
+    WA->>WM: Incoming message webhook
+    WM->>WM: Parse message content
+    WM->>WM: Determine conversation state
+    
+    alt New Registration
+        WM->>FHIR: Create Patient resource
+        FHIR-->>WM: Patient ID
+        WM->>CP: Create payment profile
+        CP-->>WM: Payment profile ID
+        WM->>WA: Send confirmation message
+    
+    else Existing User Query
+        WM->>FHIR: Query patient data
+        FHIR-->>WM: Patient information
+        WM->>WA: Send response with data
+    
+    else Payment Request
+        WM->>CP: Process payment
+        CP-->>WM: Payment status
+        WM->>FHIR: Update payment record
+        WM->>WA: Send payment confirmation
+    end
+```
+
+**Environment Variables**:
+```bash
+WHATSAPP_TOKEN=your_whatsapp_business_token
+WHATSAPP_VERIFY_TOKEN=your_verify_token
+WHATSAPP_PHONE_NUMBER_ID=your_phone_number_id
+FHIR_SERVER_URL=http://fhir-server:8080/fhir
+CAREPAY_API_URL=https://api.carepay.com/v1
+OPENHIM_CORE_URL=https://openhim-core:8080
+```
+
+### 2. Carepay Mediator
+
+**Purpose**: Manages financial transactions and payment processing integration with the Carepay system.
+
+**Key Responsibilities**:
+- Process payment requests from healthcare interactions
+- Sync payment data with FHIR Coverage resources
+- Handle payment notifications and callbacks
+- Manage subscriber payment profiles
+- Generate financial reports
+
+**Configuration**:
+```json
+{
+  "urn": "urn:mediator:carepay-mediator",
+  "version": "1.0.0",
+  "name": "Carepay Mediator",
+  "description": "Mediator for Carepay payment system integration",
+  "endpoints": [
+    {
+      "name": "Carepay API",
+      "host": "localhost",
+      "port": "3002",
+      "path": "/carepay",
+      "type": "http"
+    }
+  ],
+  "defaultChannelConfig": [
+    {
+      "name": "Carepay Channel",
+      "urlPattern": "^/carepay.*$",
+      "routes": [
+        {
+          "name": "Carepay Mediator Route",
+          "host": "carepay-mediator",
+          "port": "3002",
+          "primary": true,
+          "type": "http"
+        }
+      ],
+      "allow": ["carepay-client"],
+      "methods": ["GET", "POST", "PUT"],
+      "type": "http"
+    }
+  ]
+}
+```
+
+**Payment Flow**:
+```{mermaid}
+sequenceDiagram
+    participant User as Patient
+    participant WM as WhatsApp Mediator
+    participant CM as Carepay Mediator
+    participant CP as Carepay API
+    participant FHIR as FHIR Server
+    
+    User->>WM: Request service payment
+    WM->>CM: Payment request
+    CM->>CP: Create payment transaction
+    CP-->>CM: Transaction ID
+    CM->>FHIR: Create Coverage resource
+    FHIR-->>CM: Coverage ID
+    CM-->>WM: Payment details
+    WM-->>User: Payment instructions
+    
+    Note over CP: Payment processing
+    CP->>CM: Payment webhook notification
+    CM->>FHIR: Update Coverage status
+    CM->>WM: Payment confirmation
+    WM->>User: Payment success message
+```
+
+### 3. FHIR Mediator
+
+**Purpose**: Standardizes and validates all FHIR resource operations across the HIE.
+
+**Key Responsibilities**:
+- Validate incoming FHIR resources
+- Transform data formats to FHIR R4 standard
+- Handle FHIR resource relationships
+- Manage patient matching and deduplication
+- Audit FHIR operations
+
+**Configuration**:
+```json
+{
+  "urn": "urn:mediator:fhir-mediator",
+  "version": "1.0.0",
+  "name": "FHIR Mediator",
+  "description": "Mediator for FHIR resource processing and validation",
+  "endpoints": [
+    {
+      "name": "FHIR Processing",
+      "host": "localhost",
+      "port": "3003",
+      "path": "/fhir",
+      "type": "http"
+    }
+  ]
+}
+```
+
+**FHIR Resource Processing**:
+```{mermaid}
+graph TB
+    subgraph "Input Processing"
+        INPUT[Raw Data Input]
+        VALIDATE[Schema Validation]
+        TRANSFORM[Data Transformation]
+    end
+    
+    subgraph "FHIR Resources"
+        PATIENT[Patient Resource]
+        ENCOUNTER[Encounter Resource]
+        OBSERVATION[Observation Resource]
+        COVERAGE[Coverage Resource]
+        PRACTITIONER[Practitioner Resource]
+    end
+    
+    subgraph "Output Processing"
+        PERSIST[Persist to FHIR Server]
+        INDEX[Search Index Update]
+        AUDIT[Audit Log Entry]
+    end
+    
+    INPUT --> VALIDATE
+    VALIDATE --> TRANSFORM
+    
+    TRANSFORM --> PATIENT
+    TRANSFORM --> ENCOUNTER
+    TRANSFORM --> OBSERVATION
+    TRANSFORM --> COVERAGE
+    TRANSFORM --> PRACTITIONER
+    
+    PATIENT --> PERSIST
+    ENCOUNTER --> PERSIST
+    OBSERVATION --> PERSIST
+    COVERAGE --> PERSIST
+    PRACTITIONER --> PERSIST
+    
+    PERSIST --> INDEX
+    INDEX --> AUDIT
+    
+    classDef input fill:#e3f2fd
+    classDef resource fill:#f3e5f5
+    classDef output fill:#e8f5e8
+    
+    class INPUT,VALIDATE,TRANSFORM input
+    class PATIENT,ENCOUNTER,OBSERVATION,COVERAGE,PRACTITIONER resource
+    class PERSIST,INDEX,AUDIT output
+```
+
+### 4. Authentication Mediator
+
+**Purpose**: Handles authentication and authorization for all API requests.
+
+**Key Responsibilities**:
+- Validate JWT tokens from Keycloak
+- Enforce role-based access control (RBAC)
+- Handle OAuth 2.0 flows
+- Manage API client credentials
+- Log authentication events
+
+**Configuration**:
+```json
+{
+  "urn": "urn:mediator:auth-mediator",
+  "version": "1.0.0",
+  "name": "Authentication Mediator",
+  "description": "Mediator for authentication and authorization",
+  "endpoints": [
+    {
+      "name": "Auth Processing",
+      "host": "localhost",
+      "port": "3004",
+      "path": "/auth",
+      "type": "http"
+    }
+  ]
+}
+```
+
+**Authentication Flow**:
+```{mermaid}
+sequenceDiagram
+    participant Client as API Client
+    participant AM as Auth Mediator
+    participant KC as Keycloak
+    participant TARGET as Target Service
+    
+    Client->>AM: API Request + JWT Token
+    AM->>KC: Validate JWT Token
+    KC-->>AM: Token validation result
+    
+    alt Valid Token
+        AM->>AM: Check permissions/roles
+        AM->>TARGET: Forward request
+        TARGET-->>AM: Response
+        AM-->>Client: Response
+    else Invalid Token
+        AM-->>Client: 401 Unauthorized
+    end
+```
+
+### 5. Notification Mediator
+
+**Purpose**: Manages all system notifications and alerts across the HIE.
+
+**Key Responsibilities**:
+- Send SMS notifications
+- Email notifications for system events
+- Push notifications to mobile apps
+- Alert healthcare providers of critical events
+- Manage notification preferences
+
+**Configuration**:
+```json
+{
+  "urn": "urn:mediator:notification-mediator",
+  "version": "1.0.0",
+  "name": "Notification Mediator",
+  "description": "Mediator for system notifications and alerts",
+  "endpoints": [
+    {
+      "name": "Notification Processing",
+      "host": "localhost",
+      "port": "3005",
+      "path": "/notifications",
+      "type": "http"
+    }
+  ]
+}
+```
+
+## Mediator Development Guidelines
+
+### 1. Standard Structure
+
+All mediators follow a standardized Node.js Express application structure:
+
+```
+mediator-name/
+├── src/
+│   ├── routes/          # API route handlers
+│   ├── services/        # Business logic services
+│   ├── models/          # Data models
+│   ├── middleware/      # Express middleware
+│   ├── config/          # Configuration files
+│   └── utils/           # Utility functions
+├── tests/               # Unit and integration tests
+├── docker/              # Docker configuration
+├── docs/                # Mediator-specific documentation
+├── package.json         # Node.js dependencies
+├── Dockerfile           # Container definition
+└── mediator.json        # OpenHIM mediator registration
+```
+
+### 2. Error Handling
+
+All mediators implement standardized error handling:
+
+```javascript
+// Standard error response format
+const errorResponse = {
+  "x-mediator-urn": "urn:mediator:example-mediator:1.0.0",
+  "status": "Failed",
+  "response": {
+    "status": 500,
+    "headers": {
+      "content-type": "application/json"
+    },
+    "body": {
+      "error": "Internal server error",
+      "message": "Detailed error description",
+      "timestamp": "2024-01-01T00:00:00Z",
+      "requestId": "unique-request-id"
+    }
+  },
+  "orchestrations": [
+    {
+      "name": "Error logging",
+      "request": {
+        "method": "POST",
+        "uri": "http://logging-service/errors",
+        "timestamp": "2024-01-01T00:00:00Z"
+      }
+    }
+  ]
+}
+```
+
+### 3. Logging Standards
+
+All mediators use structured logging:
+
+```javascript
+const logger = require('winston');
+
+// Standard log format
+logger.info('Processing WhatsApp message', {
+  messageId: 'msg-123',
+  phoneNumber: '+1234567890',
+  messageType: 'text',
+  timestamp: new Date().toISOString(),
+  mediator: 'whatsapp-mediator'
+});
+```
+
+### 4. Health Checks
+
+All mediators implement health check endpoints:
+
+```javascript
+// GET /health
+app.get('/health', (req, res) => {
+  const health = {
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    uptime: process.uptime(),
+    version: process.env.MEDIATOR_VERSION,
+    dependencies: {
+      database: checkDatabaseHealth(),
+      externalApi: checkExternalApiHealth(),
+      openhim: checkOpenHIMHealth()
+    }
+  };
+  
+  res.status(200).json(health);
+});
+```
+
+## Monitoring and Maintenance
+
+### Performance Metrics
+
+Each mediator exposes the following metrics:
+
+- **Request rate**: Requests per second
+- **Response time**: Average, 95th, and 99th percentile
+- **Error rate**: Percentage of failed requests
+- **Resource usage**: CPU, memory, disk I/O
+
+### Scaling Considerations
+
+- **Horizontal scaling**: Run multiple instances behind load balancer
+- **Resource limits**: Set appropriate CPU and memory limits
+- **Connection pooling**: Reuse database and HTTP connections
+- **Circuit breakers**: Prevent cascade failures
+
+### Troubleshooting Common Issues
+
+1. **High memory usage**: Check for memory leaks in async operations
+2. **Database connection errors**: Verify connection string and firewall rules
+3. **Authentication failures**: Check JWT token expiration and Keycloak connectivity
+4. **FHIR validation errors**: Verify resource schemas match FHIR R4 specification

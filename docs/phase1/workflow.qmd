@@ -1,0 +1,38 @@
+---
+title: "Workflow"
+description: "Step-by-step process for WhatsApp enrollment."
+---
+
+## WhatsApp Enrollment Steps
+
+1. **User Engagement**:
+   - The user initiates the process by typing any message (e.g., "start") in the WhatsApp chatbot.
+   - The bot responds with a welcome message that introduces its purpose and offers two buttons: "Register" and "Ask a Question."
+
+2. **Consent Collection**:
+   - A consent form is sent to the user through WhatsApp. The user must accept the terms to proceed with the enrollment.
+
+3. **Enrollment Initiation**:
+   - Upon providing consent, the bot asks the user to confirm if the number they are using is their WhatsApp number for future communication.
+   - The user confirms and taps the "Start Registration" button to begin enrollment.
+
+4. **Information Collection**:
+   - The bot sequentially collects the following information:
+     - First Name
+     - Last Name
+     - Date of Birth
+     - Marital Status
+     - Nationality
+     - ID Number
+     - Telephone Number
+     - Hospital for receiving services
+     - Last Menstrual Period (LMP)
+     - Health conditions
+     - Previous pregnancy details
+
+5. **Confirmation**:
+   - After verification, a unique Beneficiary ID is generated and shared with the user, marking the completion of the enrollment process.
+
+6. **Follow-Up**:
+   - Post-enrollment, the system sends automated reminders for antenatal care visits and collects feedback from mothers about their healthcare experiences.
+

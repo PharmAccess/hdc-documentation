@@ -1,0 +1,17 @@
+---
+title: "Outcomes"
+description: "Benefits and impact of Phase 1 implementation."
+---
+
+Phase 1 of the Mamatoto project delivered several key outcomes that significantly improved maternal healthcare accessibility and efficiency.
+
+## Benefits
+
+- **Increased Enrollment**: Over n% of the target population successfully enrolled via WhatsApp.
+- **Accurate Data Management**: Integrated systems ensured reliable data collection and storage.
+- **Improved Healthcare Delivery**: Real-time updates and reminders improved antenatal care attendance.
+
+## Long-Term Impact
+
+- Strengthened healthcare systems for scalability.
+- Enhanced trust among users in digital healthcare platforms.
