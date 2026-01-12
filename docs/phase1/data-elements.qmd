@@ -1,0 +1,22 @@
+---
+title: "Data Elements"
+description: "Details of data collected during enrollment."
+---
+
+Phase 1 relied on collecting accurate and essential data from users to provide tailored maternal healthcare services. Below are the key data points:
+
+
+| Data Element           | Description                               |
+|------------------------|-------------------------------------------|
+| First Name             | Beneficiary’s first name.                |
+| Last Name              | Beneficiary’s last name.                 |
+| Date of Birth          | Beneficiary’s date of birth.             |
+| Marital Status         | Beneficiary’s marital status.            |
+| Nationality            | Beneficiary’s nationality.               |
+| ID Number              | Identification number.                   |
+| Telephone Number       | Contact information for follow-ups.      |
+| Hospital               | Hospital where services will be received.|
+| Last Menstrual Period  | Date of the last menstrual period to calculate the Expected Date of Delivery (EDD). |
+| Health Conditions      | Existing health conditions, such as diabetes or hypertension. |
+| Previous Pregnancy     | Details of prior pregnancies, including complications or outcomes. |
+

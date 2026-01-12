@@ -1,0 +1,15 @@
+---
+title: "Introduction"
+description: "Overview of Phase 1 in the Mamatoto project."
+---
+
+The first phase of the MamaToto project focused on enabling pregnant mothers to self-enroll via WhatsApp. The primary goal was to improve access to maternal healthcare services by streamlining enrollment into MomCare while ensuring seamless data integration with key systems, including the Shared Health Record (SHR), Carepay, and the Interoperability Layer (IOL).
+
+MomCare, a care bundle by the PharmAccess Foundation, supports expectant mothers throughout their pregnancy journey.
+
+The project aimed to develop an efficient, user-friendly enrollment process that could scale across regions while ensuring the secure and accurate handling of maternal health data.
+
+## Key Objectives
+- Provide an accessible and efficient enrollment solution via WhatsApp.
+- Ensure seamless data exchange and integration across provider systems.
+- Lay the foundation for scalable maternal healthcare solutions.

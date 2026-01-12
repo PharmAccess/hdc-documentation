@@ -1,0 +1,906 @@
+---
+title: "SSL/TLS Certificate Management"
+description: "Complete guide to SSL certificate setup, management, and troubleshooting for MamaToto HIE"
+sidebar: iol
+---
+
+# SSL/TLS Certificate Management
+
+## Overview
+
+The MamaToto HIE requires SSL/TLS certificates for secure communication between all components. This guide provides comprehensive scripts and procedures for certificate management in both development and production environments.
+
+## Certificate Architecture
+
+```{mermaid}
+graph TB
+    subgraph "Certificate Authority"
+        CA[Root CA Certificate]
+        INT[Intermediate CA]
+    end
+    
+    subgraph "Server Certificates"
+        KC_CERT[Keycloak Certificate<br/>keycloak.mamatoto.org]
+        OHIM_CERT[OpenHIM Certificate<br/>openhim.mamatoto.org]
+        FHIR_CERT[FHIR Server Certificate<br/>fhir.mamatoto.org]
+        NGINX_CERT[Nginx Certificate<br/>*.mamatoto.org]
+    end
+    
+    subgraph "Client Certificates"
+        MED_CERT[Mediator Certificates]
+        API_CERT[API Client Certificates]
+    end
+    
+    CA --> INT
+    INT --> KC_CERT
+    INT --> OHIM_CERT
+    INT --> FHIR_CERT
+    INT --> NGINX_CERT
+    INT --> MED_CERT
+    INT --> API_CERT
+    
+    classDef ca fill:#ffebee
+    classDef server fill:#e8f5e8
+    classDef client fill:#e3f2fd
+    
+    class CA,INT ca
+    class KC_CERT,OHIM_CERT,FHIR_CERT,NGINX_CERT server
+    class MED_CERT,API_CERT client
+```
+
+## SSL Certificate Setup Scripts
+
+### 1. Master Certificate Management Script
+
+```bash
+#!/bin/bash
+# ssl-manager.sh - Complete SSL certificate management script
+
+set -e
+
+# Configuration
+CERT_DIR="/opt/ssl"
+CA_DIR="${CERT_DIR}/ca"
+CERTS_DIR="${CERT_DIR}/certs"
+KEYS_DIR="${CERT_DIR}/private"
+CONFIG_DIR="${CERT_DIR}/config"
+
+# Certificate validity periods
+CA_DAYS=3650  # 10 years for CA
+CERT_DAYS=365 # 1 year for server certificates
+
+# Domain configuration
+BASE_DOMAIN="mamatoto.org"
+SUBDOMAINS=(
+    "keycloak"
+    "openhim"
+    "fhir"
+    "api"
+    "*.mamatoto"  # Wildcard certificate
+)
+
+# Colors for output
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# Logging functions
+log_info() {
+    echo -e "${GREEN}[INFO]${NC} $1"
+}
+
+log_warn() {
+    echo -e "${YELLOW}[WARN]${NC} $1"
+}
+
+log_error() {
+    echo -e "${RED}[ERROR]${NC} $1"
+}
+
+# Create directory structure
+create_directories() {
+    log_info "Creating certificate directory structure..."
+    
+    mkdir -p "${CA_DIR}"
+    mkdir -p "${CERTS_DIR}"
+    mkdir -p "${KEYS_DIR}"
+    mkdir -p "${CONFIG_DIR}"
+    
+    # Set secure permissions
+    chmod 700 "${KEYS_DIR}"
+    chmod 755 "${CERT_DIR}" "${CA_DIR}" "${CERTS_DIR}" "${CONFIG_DIR}"
+    
+    log_info "Directory structure created successfully"
+}
+
+# Generate CA certificate
+generate_ca() {
+    log_info "Generating Certificate Authority..."
+    
+    # CA configuration
+    cat > "${CONFIG_DIR}/ca.conf" << EOF
+[req]
+distinguished_name = req_distinguished_name
+x509_extensions = v3_ca
+prompt = no
+
+[req_distinguished_name]
+C = KE
+ST = Nairobi
+L = Nairobi
+O = PharmAccess Foundation
+OU = MamaToto HIE
+CN = MamaToto Root CA
+emailAddress = admin@pharmaccess.org
+
+[v3_ca]
+subjectKeyIdentifier = hash
+authorityKeyIdentifier = keyid:always,issuer:always
+basicConstraints = critical,CA:true
+keyUsage = critical,digitalSignature,cRLSign,keyCertSign
+EOF
+
+    # Generate CA private key
+    openssl genrsa -out "${CA_DIR}/ca.key" 4096
+    
+    # Generate CA certificate
+    openssl req -new -x509 -days ${CA_DAYS} \
+        -key "${CA_DIR}/ca.key" \
+        -out "${CA_DIR}/ca.crt" \
+        -config "${CONFIG_DIR}/ca.conf"
+    
+    # Set permissions
+    chmod 600 "${CA_DIR}/ca.key"
+    chmod 644 "${CA_DIR}/ca.crt"
+    
+    log_info "Certificate Authority generated successfully"
+}
+
+# Generate server certificate
+generate_server_cert() {
+    local domain=$1
+    local cert_name=$(echo "${domain}" | sed 's/\*\.//g' | sed 's/\./-/g')
+    
+    log_info "Generating certificate for ${domain}..."
+    
+    # Server certificate configuration
+    cat > "${CONFIG_DIR}/${cert_name}.conf" << EOF
+[req]
+distinguished_name = req_distinguished_name
+req_extensions = v3_req
+prompt = no
+
+[req_distinguished_name]
+C = KE
+ST = Nairobi
+L = Nairobi
+O = PharmAccess Foundation
+OU = MamaToto HIE
+CN = ${domain}
+emailAddress = admin@pharmaccess.org
+
+[v3_req]
+basicConstraints = CA:FALSE
+keyUsage = nonRepudiation, digitalSignature, keyEncipherment
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1 = ${domain}
+DNS.2 = localhost
+IP.1 = 127.0.0.1
+EOF
+
+    # Add additional DNS names for wildcard certificates
+    if [[ "${domain}" == *"*"* ]]; then
+        cat >> "${CONFIG_DIR}/${cert_name}.conf" << EOF
+DNS.3 = keycloak.${BASE_DOMAIN}
+DNS.4 = openhim.${BASE_DOMAIN}
+DNS.5 = fhir.${BASE_DOMAIN}
+DNS.6 = api.${BASE_DOMAIN}
+EOF
+    fi
+
+    # Generate private key
+    openssl genrsa -out "${KEYS_DIR}/${cert_name}.key" 2048
+    
+    # Generate certificate signing request
+    openssl req -new \
+        -key "${KEYS_DIR}/${cert_name}.key" \
+        -out "${CONFIG_DIR}/${cert_name}.csr" \
+        -config "${CONFIG_DIR}/${cert_name}.conf"
+    
+    # Generate certificate signed by CA
+    openssl x509 -req -days ${CERT_DAYS} \
+        -in "${CONFIG_DIR}/${cert_name}.csr" \
+        -CA "${CA_DIR}/ca.crt" \
+        -CAkey "${CA_DIR}/ca.key" \
+        -CAcreateserial \
+        -out "${CERTS_DIR}/${cert_name}.crt" \
+        -extensions v3_req \
+        -extfile "${CONFIG_DIR}/${cert_name}.conf"
+    
+    # Create certificate bundle
+    cat "${CERTS_DIR}/${cert_name}.crt" "${CA_DIR}/ca.crt" > "${CERTS_DIR}/${cert_name}-bundle.crt"
+    
+    # Set permissions
+    chmod 600 "${KEYS_DIR}/${cert_name}.key"
+    chmod 644 "${CERTS_DIR}/${cert_name}.crt"
+    chmod 644 "${CERTS_DIR}/${cert_name}-bundle.crt"
+    
+    log_info "Certificate for ${domain} generated successfully"
+}
+
+# Verify certificate
+verify_certificate() {
+    local cert_file=$1
+    
+    log_info "Verifying certificate: ${cert_file}"
+    
+    # Check if certificate file exists
+    if [[ ! -f "${cert_file}" ]]; then
+        log_error "Certificate file not found: ${cert_file}"
+        return 1
+    fi
+    
+    # Verify certificate against CA
+    if openssl verify -CAfile "${CA_DIR}/ca.crt" "${cert_file}" > /dev/null 2>&1; then
+        log_info "Certificate verification successful"
+        
+        # Display certificate details
+        echo "Certificate Details:"
+        openssl x509 -in "${cert_file}" -noout -subject -issuer -dates
+        echo ""
+        echo "Subject Alternative Names:"
+        openssl x509 -in "${cert_file}" -noout -text | grep -A 1 "Subject Alternative Name"
+        
+        return 0
+    else
+        log_error "Certificate verification failed"
+        return 1
+    fi
+}
+
+# Check certificate expiration
+check_expiration() {
+    local cert_file=$1
+    local warning_days=${2:-30}
+    
+    if [[ ! -f "${cert_file}" ]]; then
+        log_error "Certificate file not found: ${cert_file}"
+        return 1
+    fi
+    
+    local expiry_date=$(openssl x509 -in "${cert_file}" -noout -enddate | cut -d= -f2)
+    local expiry_epoch=$(date -d "${expiry_date}" +%s)
+    local current_epoch=$(date +%s)
+    local days_until_expiry=$(( (expiry_epoch - current_epoch) / 86400 ))
+    
+    if [[ ${days_until_expiry} -lt 0 ]]; then
+        log_error "Certificate has expired: ${cert_file}"
+        return 1
+    elif [[ ${days_until_expiry} -lt ${warning_days} ]]; then
+        log_warn "Certificate expires in ${days_until_expiry} days: ${cert_file}"
+        return 2
+    else
+        log_info "Certificate is valid for ${days_until_expiry} days: ${cert_file}"
+        return 0
+    fi
+}
+
+# Generate DH parameters for stronger security
+generate_dhparam() {
+    log_info "Generating DH parameters (this may take a while)..."
+    
+    if [[ ! -f "${CERT_DIR}/dhparam.pem" ]]; then
+        openssl dhparam -out "${CERT_DIR}/dhparam.pem" 2048
+        chmod 644 "${CERT_DIR}/dhparam.pem"
+        log_info "DH parameters generated successfully"
+    else
+        log_info "DH parameters already exist"
+    fi
+}
+
+# Export certificates for Docker containers
+export_for_docker() {
+    log_info "Exporting certificates for Docker containers..."
+    
+    local docker_cert_dir="${CERT_DIR}/docker"
+    mkdir -p "${docker_cert_dir}"
+    
+    # Copy certificates with Docker-friendly names
+    for subdomain in "${SUBDOMAINS[@]}"; do
+        local cert_name=$(echo "${subdomain}" | sed 's/\*\.//g' | sed 's/\./-/g')
+        
+        if [[ -f "${CERTS_DIR}/${cert_name}.crt" ]]; then
+            cp "${CERTS_DIR}/${cert_name}.crt" "${docker_cert_dir}/"
+            cp "${CERTS_DIR}/${cert_name}-bundle.crt" "${docker_cert_dir}/"
+            cp "${KEYS_DIR}/${cert_name}.key" "${docker_cert_dir}/"
+        fi
+    done
+    
+    # Copy CA certificate
+    cp "${CA_DIR}/ca.crt" "${docker_cert_dir}/"
+    
+    log_info "Certificates exported to ${docker_cert_dir}"
+}
+
+# Main function
+main() {
+    case "${1:-}" in
+        "init")
+            log_info "Initializing SSL certificate infrastructure..."
+            create_directories
+            generate_ca
+            generate_dhparam
+            
+            for subdomain in "${SUBDOMAINS[@]}"; do
+                generate_server_cert "${subdomain}.${BASE_DOMAIN}"
+            done
+            
+            export_for_docker
+            log_info "SSL certificate infrastructure initialized successfully"
+            ;;
+        
+        "generate")
+            if [[ -z "${2:-}" ]]; then
+                log_error "Usage: $0 generate <domain>"
+                exit 1
+            fi
+            generate_server_cert "$2"
+            ;;
+        
+        "verify")
+            if [[ -z "${2:-}" ]]; then
+                log_error "Usage: $0 verify <certificate-file>"
+                exit 1
+            fi
+            verify_certificate "$2"
+            ;;
+        
+        "check-expiry")
+            log_info "Checking certificate expiration..."
+            for cert_file in "${CERTS_DIR}"/*.crt; do
+                if [[ -f "${cert_file}" ]]; then
+                    check_expiration "${cert_file}"
+                fi
+            done
+            ;;
+        
+        "renew")
+            log_info "Renewing certificates..."
+            for subdomain in "${SUBDOMAINS[@]}"; do
+                generate_server_cert "${subdomain}.${BASE_DOMAIN}"
+            done
+            export_for_docker
+            log_info "Certificate renewal completed"
+            ;;
+        
+        "export")
+            export_for_docker
+            ;;
+        
+        *)
+            echo "Usage: $0 {init|generate|verify|check-expiry|renew|export}"
+            echo ""
+            echo "Commands:"
+            echo "  init           - Initialize complete SSL infrastructure"
+            echo "  generate <domain> - Generate certificate for specific domain"
+            echo "  verify <cert>  - Verify certificate against CA"
+            echo "  check-expiry   - Check expiration of all certificates"
+            echo "  renew          - Renew all certificates"
+            echo "  export         - Export certificates for Docker"
+            exit 1
+            ;;
+    esac
+}
+
+# Run main function with all arguments
+main "$@"
+```
+
+### 2. Docker Integration Script
+
+```bash
+#!/bin/bash
+# docker-ssl-setup.sh - Docker-specific SSL setup
+
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+CERT_DIR="/opt/ssl"
+DOCKER_CERT_DIR="${CERT_DIR}/docker"
+
+# Create SSL volume for Docker
+create_ssl_volume() {
+    echo "Creating SSL Docker volume..."
+    
+    if ! docker volume ls | grep -q ssl-certs; then
+        docker volume create ssl-certs
+    fi
+    
+    # Copy certificates to volume
+    docker run --rm \
+        -v ssl-certs:/certs \
+        -v "${DOCKER_CERT_DIR}:/host-certs:ro" \
+        alpine:latest \
+        sh -c "cp -r /host-certs/* /certs/"
+    
+    echo "SSL certificates copied to Docker volume"
+}
+
+# Update Docker Compose with SSL configuration
+update_docker_compose() {
+    cat > docker-compose.ssl.yml << 'EOF'
+version: '3.8'
+
+services:
+  keycloak:
+    environment:
+      - KC_HTTPS_CERTIFICATE_FILE=/opt/keycloak/ssl/keycloak-mamatoto-org.crt
+      - KC_HTTPS_CERTIFICATE_KEY_FILE=/opt/keycloak/ssl/keycloak-mamatoto-org.key
+      - KC_HTTP_ENABLED=false
+    volumes:
+      - ssl-certs:/opt/keycloak/ssl:ro
+
+  openhim-core:
+    environment:
+      - OPENHIM_HTTPS_CERT=/etc/ssl/certs/openhim-mamatoto-org.crt
+      - OPENHIM_HTTPS_KEY=/etc/ssl/private/openhim-mamatoto-org.key
+      - OPENHIM_HTTPS_CA=/etc/ssl/certs/ca.crt
+    volumes:
+      - ssl-certs:/etc/ssl:ro
+
+  nginx:
+    volumes:
+      - ssl-certs:/etc/nginx/ssl:ro
+      - ./nginx/ssl.conf:/etc/nginx/conf.d/ssl.conf:ro
+
+  fhir-server:
+    environment:
+      - SERVER_SSL_KEY_STORE=/opt/hapi/ssl/keystore.p12
+      - SERVER_SSL_KEY_STORE_PASSWORD=changeit
+      - SERVER_SSL_KEY_STORE_TYPE=PKCS12
+    volumes:
+      - ssl-certs:/opt/hapi/ssl:ro
+
+volumes:
+  ssl-certs:
+    external: true
+EOF
+
+    echo "Docker Compose SSL configuration created"
+}
+
+# Generate PKCS12 keystore for Java applications
+generate_keystore() {
+    local cert_name="fhir-mamatoto-org"
+    local keystore_path="${DOCKER_CERT_DIR}/keystore.p12"
+    local password="changeit"
+    
+    echo "Generating PKCS12 keystore for Java applications..."
+    
+    openssl pkcs12 -export \
+        -in "${DOCKER_CERT_DIR}/${cert_name}.crt" \
+        -inkey "${DOCKER_CERT_DIR}/${cert_name}.key" \
+        -out "${keystore_path}" \
+        -name "fhir-server" \
+        -CAfile "${DOCKER_CERT_DIR}/ca.crt" \
+        -caname "mamatoto-ca" \
+        -password "pass:${password}"
+    
+    echo "PKCS12 keystore generated: ${keystore_path}"
+}
+
+# Main execution
+main() {
+    case "${1:-}" in
+        "setup")
+            create_ssl_volume
+            update_docker_compose
+            generate_keystore
+            echo "Docker SSL setup completed"
+            ;;
+        "volume")
+            create_ssl_volume
+            ;;
+        "compose")
+            update_docker_compose
+            ;;
+        "keystore")
+            generate_keystore
+            ;;
+        *)
+            echo "Usage: $0 {setup|volume|compose|keystore}"
+            exit 1
+            ;;
+    esac
+}
+
+main "$@"
+```
+
+### 3. Production Certificate Deployment Script
+
+```bash
+#!/bin/bash
+# production-deploy.sh - Production certificate deployment
+
+set -e
+
+# Configuration
+PROD_CERT_DIR="/etc/ssl/mamatoto"
+BACKUP_DIR="/etc/ssl/backups"
+LOG_FILE="/var/log/ssl-deployment.log"
+
+# Services to restart after certificate update
+SERVICES=(
+    "nginx"
+    "keycloak"
+    "docker-compose-openhim"
+)
+
+log() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "${LOG_FILE}"
+}
+
+# Backup existing certificates
+backup_certificates() {
+    log "Backing up existing certificates..."
+    
+    local backup_timestamp=$(date +%Y%m%d_%H%M%S)
+    local backup_path="${BACKUP_DIR}/${backup_timestamp}"
+    
+    mkdir -p "${backup_path}"
+    
+    if [[ -d "${PROD_CERT_DIR}" ]]; then
+        cp -r "${PROD_CERT_DIR}"/* "${backup_path}/"
+        log "Certificates backed up to ${backup_path}"
+    else
+        log "No existing certificates to backup"
+    fi
+}
+
+# Deploy new certificates
+deploy_certificates() {
+    local source_dir=$1
+    
+    log "Deploying certificates from ${source_dir}..."
+    
+    # Validate source directory
+    if [[ ! -d "${source_dir}" ]]; then
+        log "ERROR: Source directory not found: ${source_dir}"
+        exit 1
+    fi
+    
+    # Create production directory
+    mkdir -p "${PROD_CERT_DIR}"
+    
+    # Copy certificates
+    cp -r "${source_dir}"/* "${PROD_CERT_DIR}/"
+    
+    # Set proper permissions
+    find "${PROD_CERT_DIR}" -name "*.key" -exec chmod 600 {} \;
+    find "${PROD_CERT_DIR}" -name "*.crt" -exec chmod 644 {} \;
+    find "${PROD_CERT_DIR}" -name "*.pem" -exec chmod 644 {} \;
+    
+    log "Certificates deployed successfully"
+}
+
+# Verify deployed certificates
+verify_deployment() {
+    log "Verifying deployed certificates..."
+    
+    local ca_cert="${PROD_CERT_DIR}/ca.crt"
+    local error_count=0
+    
+    for cert_file in "${PROD_CERT_DIR}"/*.crt; do
+        if [[ -f "${cert_file}" && "${cert_file}" != "${ca_cert}" ]]; then
+            if openssl verify -CAfile "${ca_cert}" "${cert_file}" > /dev/null 2>&1; then
+                log "Certificate verified: $(basename "${cert_file}")"
+            else
+                log "ERROR: Certificate verification failed: $(basename "${cert_file}")"
+                ((error_count++))
+            fi
+        fi
+    done
+    
+    if [[ ${error_count} -eq 0 ]]; then
+        log "All certificates verified successfully"
+        return 0
+    else
+        log "ERROR: ${error_count} certificate(s) failed verification"
+        return 1
+    fi
+}
+
+# Restart services
+restart_services() {
+    log "Restarting services..."
+    
+    for service in "${SERVICES[@]}"; do
+        if systemctl is-active --quiet "${service}"; then
+            log "Restarting ${service}..."
+            systemctl restart "${service}"
+            
+            # Wait for service to be ready
+            sleep 5
+            
+            if systemctl is-active --quiet "${service}"; then
+                log "Service ${service} restarted successfully"
+            else
+                log "ERROR: Service ${service} failed to restart"
+                return 1
+            fi
+        else
+            log "Service ${service} is not running, skipping restart"
+        fi
+    done
+    
+    log "All services restarted successfully"
+}
+
+# Health check after deployment
+health_check() {
+    log "Performing health check..."
+    
+    local endpoints=(
+        "https://keycloak.mamatoto.org/auth/realms/mamatoto"
+        "https://openhim.mamatoto.org:8080/heartbeat"
+        "https://fhir.mamatoto.org/fhir/metadata"
+    )
+    
+    local failed_count=0
+    
+    for endpoint in "${endpoints[@]}"; do
+        if curl -f -s --max-time 10 "${endpoint}" > /dev/null; then
+            log "Health check passed: ${endpoint}"
+        else
+            log "ERROR: Health check failed: ${endpoint}"
+            ((failed_count++))
+        fi
+    done
+    
+    if [[ ${failed_count} -eq 0 ]]; then
+        log "All health checks passed"
+        return 0
+    else
+        log "ERROR: ${failed_count} health checks failed"
+        return 1
+    fi
+}
+
+# Rollback to previous certificates
+rollback() {
+    log "Rolling back to previous certificates..."
+    
+    local latest_backup=$(ls -t "${BACKUP_DIR}" | head -n1)
+    
+    if [[ -n "${latest_backup}" ]]; then
+        local backup_path="${BACKUP_DIR}/${latest_backup}"
+        
+        # Remove current certificates
+        rm -rf "${PROD_CERT_DIR}"/*
+        
+        # Restore from backup
+        cp -r "${backup_path}"/* "${PROD_CERT_DIR}/"
+        
+        # Restart services
+        restart_services
+        
+        log "Rollback completed using backup: ${latest_backup}"
+    else
+        log "ERROR: No backup found for rollback"
+        exit 1
+    fi
+}
+
+# Main function
+main() {
+    case "${1:-}" in
+        "deploy")
+            if [[ -z "${2:-}" ]]; then
+                log "ERROR: Usage: $0 deploy <source-directory>"
+                exit 1
+            fi
+            
+            backup_certificates
+            deploy_certificates "$2"
+            
+            if verify_deployment; then
+                restart_services
+                if health_check; then
+                    log "Certificate deployment completed successfully"
+                else
+                    log "Health check failed, rolling back..."
+                    rollback
+                    exit 1
+                fi
+            else
+                log "Certificate verification failed, rolling back..."
+                rollback
+                exit 1
+            fi
+            ;;
+        
+        "verify")
+            verify_deployment
+            ;;
+        
+        "rollback")
+            rollback
+            ;;
+        
+        "health")
+            health_check
+            ;;
+        
+        *)
+            echo "Usage: $0 {deploy|verify|rollback|health}"
+            echo ""
+            echo "Commands:"
+            echo "  deploy <dir>   - Deploy certificates from directory"
+            echo "  verify         - Verify deployed certificates"
+            echo "  rollback       - Rollback to previous certificates"
+            echo "  health         - Perform health check"
+            exit 1
+            ;;
+    esac
+}
+
+main "$@"
+```
+
+## Certificate Monitoring and Automation
+
+### 1. Certificate Expiration Monitoring
+
+```bash
+#!/bin/bash
+# cert-monitor.sh - Certificate expiration monitoring
+
+CERT_DIR="/opt/ssl/certs"
+WARNING_DAYS=30
+CRITICAL_DAYS=7
+EMAIL_RECIPIENT="admin@pharmaccess.org"
+
+check_certificate_expiry() {
+    local cert_file=$1
+    local cert_name=$(basename "${cert_file}" .crt)
+    
+    local expiry_date=$(openssl x509 -in "${cert_file}" -noout -enddate | cut -d= -f2)
+    local expiry_epoch=$(date -d "${expiry_date}" +%s)
+    local current_epoch=$(date +%s)
+    local days_until_expiry=$(( (expiry_epoch - current_epoch) / 86400 ))
+    
+    if [[ ${days_until_expiry} -lt ${CRITICAL_DAYS} ]]; then
+        echo "CRITICAL: Certificate ${cert_name} expires in ${days_until_expiry} days"
+        return 2
+    elif [[ ${days_until_expiry} -lt ${WARNING_DAYS} ]]; then
+        echo "WARNING: Certificate ${cert_name} expires in ${days_until_expiry} days"
+        return 1
+    else
+        echo "OK: Certificate ${cert_name} expires in ${days_until_expiry} days"
+        return 0
+    fi
+}
+
+# Check all certificates
+for cert_file in "${CERT_DIR}"/*.crt; do
+    if [[ -f "${cert_file}" ]]; then
+        result=$(check_certificate_expiry "${cert_file}")
+        echo "${result}"
+        
+        # Send email for warnings and critical alerts
+        if [[ $? -gt 0 ]]; then
+            echo "${result}" | mail -s "Certificate Expiry Alert - MamaToto HIE" "${EMAIL_RECIPIENT}"
+        fi
+    fi
+done
+```
+
+### 2. Automated Certificate Renewal
+
+```bash
+#!/bin/bash
+# auto-renew.sh - Automated certificate renewal
+
+CERT_DIR="/opt/ssl"
+RENEWAL_DAYS=30
+LOG_FILE="/var/log/cert-renewal.log"
+
+log() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" | tee -a "${LOG_FILE}"
+}
+
+# Check if renewal is needed
+needs_renewal() {
+    local cert_file=$1
+    
+    local expiry_date=$(openssl x509 -in "${cert_file}" -noout -enddate | cut -d= -f2)
+    local expiry_epoch=$(date -d "${expiry_date}" +%s)
+    local current_epoch=$(date +%s)
+    local days_until_expiry=$(( (expiry_epoch - current_epoch) / 86400 ))
+    
+    [[ ${days_until_expiry} -lt ${RENEWAL_DAYS} ]]
+}
+
+# Automatic renewal process
+for cert_file in "${CERT_DIR}/certs"/*.crt; do
+    if [[ -f "${cert_file}" ]] && needs_renewal "${cert_file}"; then
+        cert_name=$(basename "${cert_file}" .crt)
+        log "Certificate ${cert_name} needs renewal"
+        
+        # Generate new certificate
+        if "${CERT_DIR}/ssl-manager.sh" generate "${cert_name}"; then
+            log "Certificate ${cert_name} renewed successfully"
+            
+            # Deploy to production
+            "${CERT_DIR}/production-deploy.sh" deploy "${CERT_DIR}/docker"
+        else
+            log "ERROR: Failed to renew certificate ${cert_name}"
+        fi
+    fi
+done
+```
+
+## Troubleshooting
+
+### Common SSL Issues and Solutions
+
+#### 1. Certificate Verification Failures
+
+```bash
+# Check certificate chain
+openssl s_client -connect keycloak.mamatoto.org:443 -showcerts
+
+# Verify certificate against CA
+openssl verify -CAfile /opt/ssl/ca/ca.crt /opt/ssl/certs/keycloak-mamatoto-org.crt
+
+# Check certificate details
+openssl x509 -in /opt/ssl/certs/keycloak-mamatoto-org.crt -noout -text
+```
+
+#### 2. Docker Container SSL Issues
+
+```bash
+# Check SSL volume contents
+docker run --rm -v ssl-certs:/certs alpine:latest ls -la /certs
+
+# Test SSL connection from container
+docker exec -it keycloak openssl s_client -connect localhost:8443
+
+# Check container SSL configuration
+docker exec -it keycloak env | grep SSL
+```
+
+#### 3. Service Configuration Issues
+
+```bash
+# Check Nginx SSL configuration
+nginx -t
+
+# Test Keycloak SSL
+curl -v https://keycloak.mamatoto.org/auth/realms/mamatoto
+
+# Verify OpenHIM SSL
+curl -k -v https://openhim.mamatoto.org:8080/heartbeat
+```
+
+## Maintenance Procedures
+
+### Daily Checks
+- Monitor certificate expiration alerts
+- Check SSL service health endpoints
+- Review SSL-related logs for errors
+
+### Weekly Tasks
+- Run certificate expiration check script
+- Verify backup certificate storage
+- Test certificate renewal process in staging
+
+### Monthly Tasks
+- Review and update SSL configurations
+- Test disaster recovery procedures
+- Update certificate monitoring thresholds
+- Security audit of SSL/TLS configurations

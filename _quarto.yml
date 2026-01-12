@@ -14,8 +14,18 @@ website:
     left:
       - href: index.qmd
         text: Introduction
+      - href: docs/getting_started.qmd
+        text: Getting Started
+      - file: docs/phase1/phase1.qmd
+        text: Beneficiary Enrollment
+      - file: docs/architecture/system-overview.qmd
+        text: Architecture
+      - file: docs/mediators/overview.qmd
+        text: Mediators
       - file: docs/whatsapp.qmd
         text: WhatsApp
+      - file: docs/rationale.qmd
+        text: Rationale
       - file: docs/iol/index.qmd
         text: IOL
       - file: docs/shr.qmd
@@ -23,8 +33,29 @@ website:
     right:
       - href: https://github.com/PharmAccess/hdc-documentation
         text: GitHub
-
+  
   sidebar: 
+    - id: phase1
+      title: Phase 1
+      style: "floating"
+      search: false
+      align: left
+      contents: 
+        - section: "Phase 1"
+          href: docs/phase1/phase1.qmd
+          contents:
+            # - file: docs/phase1/introduction.qmd
+            #   text: Introduction
+            - file: docs/phase1/workflow.qmd
+              text: Workflow
+            - file: docs/phase1/technical-components.qmd
+              text: Technical Components
+            - file: docs/phase1/data-elements.qmd
+              text: Data Elements
+            - file: docs/phase1/challenges-solutions.qmd
+              text: Challenges and Solutions
+            - file: docs/phase1/outcomes.qmd
+              text: Outcomes
     - id: iol
       title: IOL
       style: "floating"
@@ -34,13 +65,20 @@ website:
         - section: "IOL"
           href: docs/iol/index.qmd
           contents:
-            - section: "challenges"
+            - file: docs/mediators/overview.qmd
+              text: "Mediators Overview"
+            - file: docs/ssl/certificate-management.qmd
+              text: "SSL/TLS Management"
+            - section: "Challenges"
               contents: 
                 - file: docs/iol/challenges/keycloak_intergration.qmd
                 - file: docs/iol/challenges/fhir_web.qmd
-            - section: "sample"
+            - file: docs/iol/iol-customization/iol-customization.qmd
+              text: "IOL Customisation"
+            - section: "Instant OpenHIE v2"
               contents: 
-                - file: docs/iol/sample/sample.qmd
+                - file: docs/iol/instant-v2/instant_v2.qmd
+         
 
 format:
   html:
@@ -53,3 +91,5 @@ format:
       body-width: 900px
       margin-width: 300px
     toc: true
+    mermaid:
+      theme: default

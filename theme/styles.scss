@@ -116,3 +116,102 @@ div.sidebar-item-container, div.sidebar-item-container .sidebar-link > code {
   text-indent: -0.7rem;
   padding-left: 1.4rem;
 }
+
+// Mermaid diagram styling for better visibility
+.mermaid {
+  font-family: $font-family-sans-serif !important;
+  font-size: 14px !important;
+  background-color: #ffffff !important;
+  border: 1px solid $gray-300 !important;
+  border-radius: 8px !important;
+  padding: 20px !important;
+  margin: 20px 0 !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+}
+
+.mermaid svg {
+  max-width: 100% !important;
+  height: auto !important;
+}
+
+// Mermaid node styling
+.mermaid .node rect, 
+.mermaid .node circle, 
+.mermaid .node ellipse, 
+.mermaid .node polygon {
+  fill: #f8f9fa !important;
+  stroke: $paf-color !important;
+  stroke-width: 2px !important;
+}
+
+// Mermaid text styling
+.mermaid .node text,
+.mermaid .edgeLabel text,
+.mermaid .cluster text {
+  font-family: $font-family-sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 600 !important;
+  fill: $gray-800 !important;
+}
+
+// Mermaid edge styling
+.mermaid .edge path {
+  stroke: $paf-color !important;
+  stroke-width: 2px !important;
+}
+
+.mermaid .arrowhead {
+  fill: $paf-color !important;
+  stroke: $paf-color !important;
+}
+
+// Mermaid subgraph styling
+.mermaid .cluster rect {
+  fill: rgba(14, 78, 119, 0.05) !important;
+  stroke: $paf-color !important;
+  stroke-width: 1px !important;
+  stroke-dasharray: 3,3 !important;
+}
+
+// Mermaid sequence diagram styling
+.mermaid .actor {
+  fill: #f8f9fa !important;
+  stroke: $paf-color !important;
+  stroke-width: 2px !important;
+}
+
+.mermaid .messageLine0, 
+.mermaid .messageLine1 {
+  stroke: $paf-color !important;
+  stroke-width: 2px !important;
+}
+
+.mermaid .messageText {
+  font-family: $font-family-sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  fill: $gray-800 !important;
+}
+
+// Mermaid flowchart specific colors
+.mermaid .node.ui rect { fill: #e3f2fd !important; }
+.mermaid .node.integration rect { fill: #fff3e0 !important; }
+.mermaid .node.core rect { fill: #e8f5e8 !important; }
+.mermaid .node.data rect { fill: #f3e5f5 !important; }
+.mermaid .node.gcp rect { fill: #4285f4 !important; color: white !important; }
+.mermaid .node.container rect { fill: #0066cc !important; color: white !important; }
+.mermaid .node.database rect { fill: #ff9900 !important; color: white !important; }
+.mermaid .node.external rect { fill: #34a853 !important; color: white !important; }
+.mermaid .node.user rect { fill: #ea4335 !important; color: white !important; }
+.mermaid .node.compute rect { fill: #4285f4 !important; color: white !important; }
+.mermaid .node.network rect { fill: #34a853 !important; color: white !important; }
+.mermaid .node.security rect { fill: #ea4335 !important; color: white !important; }
+.mermaid .node.enroll rect { fill: #e8f5e8 !important; }
+.mermaid .node.service rect { fill: #fff3e0 !important; }
+.mermaid .node.finance rect { fill: #f3e5f5 !important; }
+.mermaid .node.request rect { fill: #e3f2fd !important; }
+.mermaid .node.mediator rect { fill: #fff3e0 !important; }
+.mermaid .node.target rect { fill: #f3e5f5 !important; }
+.mermaid .node.hie rect { fill: #e8f5e8 !important; }
+.mermaid .node.carepay rect { fill: #fff3e0 !important; }
+.mermaid .node.payment rect { fill: #e3f2fd !important; }

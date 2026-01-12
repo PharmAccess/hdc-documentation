@@ -1,0 +1,16 @@
+---
+title: "Challenges and Solutions"
+description: "Issues faced and solutions applied in Phase 1."
+---
+
+Phase 1 encountered several challenges that required innovative solutions to ensure successful implementation.
+
+## Challenges
+
+1. **OpenHIM-Keycloak Integration**:
+   - Difficulty in establishing secure authentication between systems.
+   - Solution: Configured OpenID Connect for seamless token exchange.
+
+2. **FHIR Data Compliance**:
+   - Ensuring that collected data met FHIR standards for interoperability.
+   - Solution: Developed custom mediators to validate and transform data into FHIR-compliant formats.

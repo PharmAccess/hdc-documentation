@@ -1,5 +1,51 @@
 ---
-title: "Docs"
+title: "WhatsApp"
+description: "Detailed overview of the WhatsApp integration in the Mamatoto project."
 ---
 
-About this site
+# WhatsApp Integration in the Mamatoto Project
+
+## Overview
+The WhatsApp platform plays a pivotal role in the Mamatoto project, serving as the primary interface for user engagement and self-enrollment. Its familiarity and accessibility make it an ideal choice for reaching a wide range of users, particularly pregnant mothers, ensuring ease of access to maternal healthcare services.
+
+## Features and Functionalities
+1. **User-Friendly Interface**:
+   - Designed to guide users through the enrollment process with minimal effort.
+   - Employs conversational prompts and buttons for intuitive navigation.
+
+2. **Automated Communication**:
+   - Responds instantly to user inputs, delivering timely messages and instructions.
+   - Sends reminders for antenatal care visits and collects post-visit feedback.
+
+3. **Dynamic Workflow**:
+   - Seamlessly transitions users through key stages: consent, registration, and confirmation.
+   - Adjusts prompts based on user responses, ensuring personalized engagement.
+
+4. **Data Collection**:
+   - Collects vital information such as name, date of birth, marital status, and health history.
+   - Validates data in real-time to ensure accuracy.
+
+## Technical Implementation
+The WhatsApp integration leverages chatbot technology and backend systems to manage workflows and data processing.
+
+### Architecture
+- **WhatsApp Business API**:
+  Handles communication between users and the chatbot.
+- **Backend Services**:
+  - Manages user sessions, stores data securely, and interfaces with other systems like SHR and IOL.
+- **Consent Management**:
+  - Generates PDF consent forms and tracks user approvals.
+
+### Key Code Snippet
+```javascript
+// Example: Sending a welcome message
+const message = {
+  to: userPhone,
+  type: "text",
+  text: {
+    body: "Welcome to the Mamatoto platform! How can we assist you today? Please select an option:\n1. Register\n2. Ask a Question"
+  }
+};
+sendWhatsAppMessage(message);
+```
+
