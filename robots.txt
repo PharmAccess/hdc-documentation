@@ -1,0 +1,1 @@
+Sitemap: https://PharmAccess.github.io/hdc-documentation/sitemap.xml

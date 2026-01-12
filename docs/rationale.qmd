@@ -1,7 +1,0 @@
----
-title: "Rationale"
-format: html
----
-
-
-##### Rationale.

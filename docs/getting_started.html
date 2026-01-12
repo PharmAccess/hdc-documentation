@@ -1,0 +1,1771 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.8.26">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="description" content="Complete developer guide for setting up the MamaToto HIE system with Google Cloud deployment">
+
+<title>Getting Started</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../">
+<script src="../site_libs/quarto-html/quarto.js" type="module"></script>
+<script src="../site_libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="../site_libs/quarto-html/axe/axe-check.js" type="module"></script>
+<script src="../site_libs/quarto-html/popper.min.js"></script>
+<script src="../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../site_libs/quarto-html/quarto-syntax-highlighting-587c61ba64f3a5504c4d52d930310e48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../site_libs/bootstrap/bootstrap-2a5e7713c17fd6bcd76e8ffc03341abf.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+<meta name="mermaid-theme" content="default">
+<script src="../site_libs/quarto-diagram/mermaid.min.js"></script>
+<script src="../site_libs/quarto-diagram/mermaid-init.js"></script>
+<link href="../site_libs/quarto-diagram/mermaid.css" rel="stylesheet">
+
+
+</head>
+
+<body class="nav-fixed quarto-light">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg " data-bs-theme="dark">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container mx-auto">
+    <a href="../index.html" class="navbar-brand navbar-brand-logo">
+    <img src="../logo-pharmaccess.png" alt="PharmAccess" class="navbar-logo light-content">
+    <img src="../logo-pharmaccess.png" alt="PharmAccess" class="navbar-logo dark-content">
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" role="menu" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll me-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../index.html"> 
+<span class="menu-text">Introduction</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link active" href="../docs/getting_started.html" aria-current="page"> 
+<span class="menu-text">Getting Started</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../docs/phase1/phase1.html"> 
+<span class="menu-text">Beneficiary Enrollment</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../docs/architecture/system-overview.html"> 
+<span class="menu-text">Architecture</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../docs/mediators/overview.html"> 
+<span class="menu-text">Mediators</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../docs/whatsapp.html"> 
+<span class="menu-text">WhatsApp</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../docs/rationale.html"> 
+<span class="menu-text">Rationale</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../docs/iol/index.html"> 
+<span class="menu-text">IOL</span></a>
+  </li>  
+  <li class="nav-item">
+    <a class="nav-link" href="../docs/shr.html"> 
+<span class="menu-text">SHR</span></a>
+  </li>  
+</ul>
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="https://github.com/PharmAccess/hdc-documentation"> 
+<span class="menu-text">GitHub</span></a>
+  </li>  
+</ul>
+          </div> <!-- /navcollapse -->
+            <div class="quarto-navbar-tools">
+</div>
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">On this page</h2>
+   
+  <ul>
+  <li><a href="#getting-started-with-mamatoto-hie" id="toc-getting-started-with-mamatoto-hie" class="nav-link active" data-scroll-target="#getting-started-with-mamatoto-hie">Getting Started with MamaToto HIE</a>
+  <ul class="collapse">
+  <li><a href="#overview" id="toc-overview" class="nav-link" data-scroll-target="#overview">Overview</a>
+  <ul class="collapse">
+  <li><a href="#system-architecture" id="toc-system-architecture" class="nav-link" data-scroll-target="#system-architecture">System Architecture</a></li>
+  </ul></li>
+  <li><a href="#part-1-google-cloud-virtual-machine-setup" id="toc-part-1-google-cloud-virtual-machine-setup" class="nav-link" data-scroll-target="#part-1-google-cloud-virtual-machine-setup">Part 1: Google Cloud Virtual Machine Setup</a>
+  <ul class="collapse">
+  <li><a href="#vm-creation-and-configuration" id="toc-vm-creation-and-configuration" class="nav-link" data-scroll-target="#vm-creation-and-configuration">1.1 VM Creation and Configuration</a></li>
+  <li><a href="#vm-initial-setup-and-security-hardening" id="toc-vm-initial-setup-and-security-hardening" class="nav-link" data-scroll-target="#vm-initial-setup-and-security-hardening">1.2 VM Initial Setup and Security Hardening</a></li>
+  <li><a href="#domain-configuration-and-ssl-setup" id="toc-domain-configuration-and-ssl-setup" class="nav-link" data-scroll-target="#domain-configuration-and-ssl-setup">1.3 Domain Configuration and SSL Setup</a></li>
+  </ul></li>
+  <li><a href="#part-2-development-environment-setup" id="toc-part-2-development-environment-setup" class="nav-link" data-scroll-target="#part-2-development-environment-setup">Part 2: Development Environment Setup</a>
+  <ul class="collapse">
+  <li><a href="#prerequisites-installation" id="toc-prerequisites-installation" class="nav-link" data-scroll-target="#prerequisites-installation">2.1 Prerequisites Installation</a></li>
+  <li><a href="#repository-setup-and-configuration" id="toc-repository-setup-and-configuration" class="nav-link" data-scroll-target="#repository-setup-and-configuration">2.2 Repository Setup and Configuration</a></li>
+  </ul></li>
+  <li><a href="#part-3-understanding-the-mediators" id="toc-part-3-understanding-the-mediators" class="nav-link" data-scroll-target="#part-3-understanding-the-mediators">Part 3: Understanding the Mediators</a>
+  <ul class="collapse">
+  <li><a href="#mediator-architecture-overview" id="toc-mediator-architecture-overview" class="nav-link" data-scroll-target="#mediator-architecture-overview">3.1 Mediator Architecture Overview</a></li>
+  <li><a href="#whatsapp-mediator---message-processing-engine" id="toc-whatsapp-mediator---message-processing-engine" class="nav-link" data-scroll-target="#whatsapp-mediator---message-processing-engine">3.2 WhatsApp Mediator - Message Processing Engine</a></li>
+  <li><a href="#carepay-mediator---payment-integration-hub" id="toc-carepay-mediator---payment-integration-hub" class="nav-link" data-scroll-target="#carepay-mediator---payment-integration-hub">3.3 Carepay Mediator - Payment Integration Hub</a></li>
+  <li><a href="#fhir-mediator---data-validation-and-transformation" id="toc-fhir-mediator---data-validation-and-transformation" class="nav-link" data-scroll-target="#fhir-mediator---data-validation-and-transformation">3.4 FHIR Mediator - Data Validation and Transformation</a></li>
+  <li><a href="#authentication-mediator---security-and-access-control" id="toc-authentication-mediator---security-and-access-control" class="nav-link" data-scroll-target="#authentication-mediator---security-and-access-control">3.5 Authentication Mediator - Security and Access Control</a></li>
+  <li><a href="#notification-mediator---multi-channel-communication" id="toc-notification-mediator---multi-channel-communication" class="nav-link" data-scroll-target="#notification-mediator---multi-channel-communication">3.6 Notification Mediator - Multi-Channel Communication</a></li>
+  </ul></li>
+  <li><a href="#part-4-system-deployment" id="toc-part-4-system-deployment" class="nav-link" data-scroll-target="#part-4-system-deployment">Part 4: System Deployment</a>
+  <ul class="collapse">
+  <li><a href="#production-deployment" id="toc-production-deployment" class="nav-link" data-scroll-target="#production-deployment">4.1 Production Deployment</a></li>
+  <li><a href="#service-verification" id="toc-service-verification" class="nav-link" data-scroll-target="#service-verification">4.2 Service Verification</a></li>
+  <li><a href="#container-management" id="toc-container-management" class="nav-link" data-scroll-target="#container-management">4.3 Container Management</a></li>
+  </ul></li>
+  <li><a href="#part-5-comprehensive-troubleshooting-guide" id="toc-part-5-comprehensive-troubleshooting-guide" class="nav-link" data-scroll-target="#part-5-comprehensive-troubleshooting-guide">Part 5: Comprehensive Troubleshooting Guide</a>
+  <ul class="collapse">
+  <li><a href="#common-deployment-issues" id="toc-common-deployment-issues" class="nav-link" data-scroll-target="#common-deployment-issues">5.1 Common Deployment Issues</a></li>
+  <li><a href="#integration-issues" id="toc-integration-issues" class="nav-link" data-scroll-target="#integration-issues">5.2 Integration Issues</a></li>
+  <li><a href="#performance-optimization" id="toc-performance-optimization" class="nav-link" data-scroll-target="#performance-optimization">5.3 Performance Optimization</a></li>
+  <li><a href="#backup-and-recovery" id="toc-backup-and-recovery" class="nav-link" data-scroll-target="#backup-and-recovery">5.4 Backup and Recovery</a></li>
+  </ul></li>
+  <li><a href="#part-6-maintenance-and-monitoring" id="toc-part-6-maintenance-and-monitoring" class="nav-link" data-scroll-target="#part-6-maintenance-and-monitoring">Part 6: Maintenance and Monitoring</a>
+  <ul class="collapse">
+  <li><a href="#system-monitoring-dashboard" id="toc-system-monitoring-dashboard" class="nav-link" data-scroll-target="#system-monitoring-dashboard">6.1 System Monitoring Dashboard</a></li>
+  <li><a href="#automated-health-checks" id="toc-automated-health-checks" class="nav-link" data-scroll-target="#automated-health-checks">6.2 Automated Health Checks</a></li>
+  <li><a href="#log-management" id="toc-log-management" class="nav-link" data-scroll-target="#log-management">6.3 Log Management</a></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion">Conclusion</a>
+  <ul class="collapse">
+  <li><a href="#quick-reference-commands" id="toc-quick-reference-commands" class="nav-link" data-scroll-target="#quick-reference-commands">Quick Reference Commands</a></li>
+  <li><a href="#next-steps" id="toc-next-steps" class="nav-link" data-scroll-target="#next-steps">Next Steps</a></li>
+  </ul></li>
+  </ul></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Getting Started</h1>
+</div>
+
+<div>
+  <div class="description">
+    Complete developer guide for setting up the MamaToto HIE system with Google Cloud deployment
+  </div>
+</div>
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="getting-started-with-mamatoto-hie" class="level1">
+<h1>Getting Started with MamaToto HIE</h1>
+<p>Welcome to the MamaToto Health Information Exchange (HIE) platform! This comprehensive guide will walk you through setting up a complete development and production environment, from Google Cloud infrastructure to local development.</p>
+<section id="overview" class="level2">
+<h2 class="anchored" data-anchor-id="overview">Overview</h2>
+<p>The MamaToto HIE is a maternal healthcare platform that enables WhatsApp-based beneficiary enrollment with standards-based FHIR and OpenHIE architecture. This system facilitates secure data exchange between healthcare providers, patients, and payment systems.</p>
+<section id="system-architecture" class="level3">
+<h3 class="anchored" data-anchor-id="system-architecture">System Architecture</h3>
+<div class="cell" data-fig-width="12" data-fig-height="10" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">graph TB
+    subgraph "Google Cloud Platform"
+        subgraph "Production VM (Ubuntu 22.04)"
+            subgraph "Docker Containers"
+                NGINX[Nginx Proxy&lt;br/&gt;:80, :443]
+                OHIM_CORE[OpenHIM Core&lt;br/&gt;:8080, :8443]
+                OHIM_CONSOLE[OpenHIM Console&lt;br/&gt;:9000]
+                FHIR[HAPI FHIR Server&lt;br/&gt;:8082]
+                KC[Keycloak&lt;br/&gt;:8180]
+                WM[WhatsApp Mediator&lt;br/&gt;:3001]
+                CM[Carepay Mediator&lt;br/&gt;:3002]
+                FM[FHIR Mediator&lt;br/&gt;:3003]
+            end
+            
+            subgraph "Databases"
+                MONGO[(MongoDB&lt;br/&gt;OpenHIM Data)]
+                POSTGRES_FHIR[(PostgreSQL&lt;br/&gt;FHIR Data)]
+                POSTGRES_KC[(PostgreSQL&lt;br/&gt;Keycloak Data)]
+            end
+        end
+        
+        subgraph "External Integrations"
+            WA_API[WhatsApp Business API]
+            CP_API[Carepay API]
+            GCP_LB[Google Cloud&lt;br/&gt;Load Balancer]
+        end
+    end
+    
+    subgraph "External Users"
+        PATIENTS[Pregnant Mothers&lt;br/&gt;WhatsApp Users]
+        PROVIDERS[Healthcare Providers&lt;br/&gt;Web Interface]
+        ADMINS[System Administrators&lt;br/&gt;OpenHIM Console]
+    end
+    
+    PATIENTS --&gt; WA_API
+    WA_API --&gt; GCP_LB
+    GCP_LB --&gt; NGINX
+    
+    PROVIDERS --&gt; GCP_LB
+    ADMINS --&gt; GCP_LB
+    
+    NGINX --&gt; OHIM_CORE
+    NGINX --&gt; OHIM_CONSOLE
+    NGINX --&gt; FHIR
+    NGINX --&gt; KC
+    
+    OHIM_CORE --&gt; WM
+    OHIM_CORE --&gt; CM
+    OHIM_CORE --&gt; FM
+    
+    WM --&gt; WA_API
+    CM --&gt; CP_API
+    FM --&gt; FHIR
+    
+    OHIM_CORE --&gt; MONGO
+    FHIR --&gt; POSTGRES_FHIR
+    KC --&gt; POSTGRES_KC
+    
+    classDef gcp fill:#4285f4,color:white
+    classDef container fill:#0066cc,color:white
+    classDef database fill:#ff9900,color:white
+    classDef external fill:#34a853,color:white
+    classDef user fill:#ea4335,color:white
+    
+    class GCP_LB,WA_API,CP_API gcp
+    class NGINX,OHIM_CORE,OHIM_CONSOLE,FHIR,KC,WM,CM,FM container
+    class MONGO,POSTGRES_FHIR,POSTGRES_KC database
+    class PATIENTS,PROVIDERS,ADMINS user
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="part-1-google-cloud-virtual-machine-setup" class="level2">
+<h2 class="anchored" data-anchor-id="part-1-google-cloud-virtual-machine-setup">Part 1: Google Cloud Virtual Machine Setup</h2>
+<section id="vm-creation-and-configuration" class="level3">
+<h3 class="anchored" data-anchor-id="vm-creation-and-configuration">1.1 VM Creation and Configuration</h3>
+<p>Our production environment runs on Google Cloud Platform using a custom-configured Ubuntu 22.04 virtual machine with Docker containers orchestrated by Instant OpenHIE v2.</p>
+<section id="vm-specifications" class="level4">
+<h4 class="anchored" data-anchor-id="vm-specifications">VM Specifications</h4>
+<div class="cell" data-fig-width="10" data-fig-height="6" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">graph LR
+    subgraph "GCP VM Configuration"
+        subgraph "Compute Engine"
+            CPU[4 vCPUs&lt;br/&gt;Intel Skylake]
+            RAM[16 GB RAM]
+            DISK[100 GB SSD&lt;br/&gt;Persistent Disk]
+        end
+        
+        subgraph "Network Configuration"
+            VPC[Custom VPC&lt;br/&gt;mamatoto-network]
+            FIREWALL[Firewall Rules&lt;br/&gt;HTTP/HTTPS/SSH]
+            IP[Static External IP&lt;br/&gt;mamatoto-hie-ip]
+        end
+        
+        subgraph "Security"
+            SA[Service Account&lt;br/&gt;mamatoto-hie-sa]
+            IAM[IAM Roles&lt;br/&gt;Compute Admin]
+            SSH_KEYS[SSH Key Pairs&lt;br/&gt;Team Access]
+        end
+    end
+    
+    classDef compute fill:#4285f4,color:white
+    classDef network fill:#34a853,color:white
+    classDef security fill:#ea4335,color:white
+    
+    class CPU,RAM,DISK compute
+    class VPC,FIREWALL,IP network
+    class SA,IAM,SSH_KEYS security
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+</section>
+<section id="step-by-step-vm-creation" class="level4">
+<h4 class="anchored" data-anchor-id="step-by-step-vm-creation">Step-by-Step VM Creation</h4>
+<p><strong>1. Create the VM Instance:</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Set project and zone variables</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">PROJECT_ID</span><span class="op">=</span><span class="st">"mamatoto-hie-project"</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">ZONE</span><span class="op">=</span><span class="st">"us-central1-a"</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">VM_NAME</span><span class="op">=</span><span class="st">"mamatoto-hie-vm"</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Create the VM with optimal configuration</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="ex">gcloud</span> compute instances create <span class="va">$VM_NAME</span> <span class="dt">\</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">--project</span><span class="op">=</span><span class="va">$PROJECT_ID</span> <span class="dt">\</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">--zone</span><span class="op">=</span><span class="va">$ZONE</span> <span class="dt">\</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">--machine-type</span><span class="op">=</span>e2-standard-4 <span class="dt">\</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">--network-interface</span><span class="op">=</span>network-tier=PREMIUM,stack-type=IPV4_ONLY,subnet=default <span class="dt">\</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">--maintenance-policy</span><span class="op">=</span>MIGRATE <span class="dt">\</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">--provisioning-model</span><span class="op">=</span>STANDARD <span class="dt">\</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">--service-account</span><span class="op">=</span>mamatoto-hie-sa@<span class="va">$PROJECT_ID</span>.iam.gserviceaccount.com <span class="dt">\</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">--scopes</span><span class="op">=</span>https://www.googleapis.com/auth/cloud-platform <span class="dt">\</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">--create-disk</span><span class="op">=</span>auto-delete=yes,boot=yes,device-name=<span class="va">$VM_NAME</span>,image=projects/ubuntu-os-cloud/global/images/ubuntu-2204-jammy-v20240319,mode=rw,size=100,type=projects/<span class="va">$PROJECT_ID</span>/zones/<span class="va">$ZONE</span>/diskTypes/pd-ssd <span class="dt">\</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">--no-shielded-secure-boot</span> <span class="dt">\</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">--shielded-vtpm</span> <span class="dt">\</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">--shielded-integrity-monitoring</span> <span class="dt">\</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">--labels</span><span class="op">=</span>environment=production,project=mamatoto-hie,team=pharmaccess <span class="dt">\</span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">--reservation-affinity</span><span class="op">=</span>any</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>2. Configure Firewall Rules:</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Allow HTTP and HTTPS traffic</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="ex">gcloud</span> compute firewall-rules create mamatoto-hie-web <span class="dt">\</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">--project</span><span class="op">=</span><span class="va">$PROJECT_ID</span> <span class="dt">\</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">--direction</span><span class="op">=</span>INGRESS <span class="dt">\</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">--priority</span><span class="op">=</span>1000 <span class="dt">\</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">--network</span><span class="op">=</span>default <span class="dt">\</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">--action</span><span class="op">=</span>ALLOW <span class="dt">\</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">--rules</span><span class="op">=</span>tcp:80,tcp:443,tcp:8080,tcp:8443,tcp:9000 <span class="dt">\</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">--source-ranges</span><span class="op">=</span>0.0.0.0/0 <span class="dt">\</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">--target-tags</span><span class="op">=</span>mamatoto-hie</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Allow SSH access for development team</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="ex">gcloud</span> compute firewall-rules create mamatoto-hie-ssh <span class="dt">\</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">--project</span><span class="op">=</span><span class="va">$PROJECT_ID</span> <span class="dt">\</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">--direction</span><span class="op">=</span>INGRESS <span class="dt">\</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    <span class="at">--priority</span><span class="op">=</span>1000 <span class="dt">\</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>    <span class="at">--network</span><span class="op">=</span>default <span class="dt">\</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">--action</span><span class="op">=</span>ALLOW <span class="dt">\</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">--rules</span><span class="op">=</span>tcp:22 <span class="dt">\</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">--source-ranges</span><span class="op">=</span>0.0.0.0/0 <span class="dt">\</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">--target-tags</span><span class="op">=</span>mamatoto-hie-ssh</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Apply tags to the VM</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="ex">gcloud</span> compute instances add-tags <span class="va">$VM_NAME</span> <span class="dt">\</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>    <span class="at">--project</span><span class="op">=</span><span class="va">$PROJECT_ID</span> <span class="dt">\</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">--zone</span><span class="op">=</span><span class="va">$ZONE</span> <span class="dt">\</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>    <span class="at">--tags</span><span class="op">=</span>mamatoto-hie,mamatoto-hie-ssh</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>3. Reserve Static IP Address:</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Reserve a static external IP</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="ex">gcloud</span> compute addresses create mamatoto-hie-ip <span class="dt">\</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">--project</span><span class="op">=</span><span class="va">$PROJECT_ID</span> <span class="dt">\</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">--region</span><span class="op">=</span>us-central1</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Get the reserved IP address</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="bu">export</span> <span class="va">STATIC_IP</span><span class="op">=</span><span class="va">$(</span><span class="ex">gcloud</span> compute addresses describe mamatoto-hie-ip <span class="dt">\</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">--region</span><span class="op">=</span>us-central1 <span class="dt">\</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">--format</span><span class="op">=</span><span class="st">"get(address)"</span><span class="va">)</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Assign the static IP to the VM</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="ex">gcloud</span> compute instances delete-access-config <span class="va">$VM_NAME</span> <span class="dt">\</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">--project</span><span class="op">=</span><span class="va">$PROJECT_ID</span> <span class="dt">\</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">--zone</span><span class="op">=</span><span class="va">$ZONE</span> <span class="dt">\</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>    <span class="at">--access-config-name</span><span class="op">=</span><span class="st">"External NAT"</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="ex">gcloud</span> compute instances add-access-config <span class="va">$VM_NAME</span> <span class="dt">\</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>    <span class="at">--project</span><span class="op">=</span><span class="va">$PROJECT_ID</span> <span class="dt">\</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    <span class="at">--zone</span><span class="op">=</span><span class="va">$ZONE</span> <span class="dt">\</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>    <span class="at">--access-config-name</span><span class="op">=</span><span class="st">"External NAT"</span> <span class="dt">\</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    <span class="at">--address</span><span class="op">=</span><span class="va">$STATIC_IP</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="vm-initial-setup-and-security-hardening" class="level3">
+<h3 class="anchored" data-anchor-id="vm-initial-setup-and-security-hardening">1.2 VM Initial Setup and Security Hardening</h3>
+<p>Once the VM is created, connect via SSH and perform initial setup:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Connect to the VM</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="ex">gcloud</span> compute ssh <span class="va">$VM_NAME</span> <span class="at">--project</span><span class="op">=</span><span class="va">$PROJECT_ID</span> <span class="at">--zone</span><span class="op">=</span><span class="va">$ZONE</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Update the system</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt update <span class="kw">&amp;&amp;</span> <span class="fu">sudo</span> apt upgrade <span class="at">-y</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Install essential packages</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt install <span class="at">-y</span> curl wget git vim htop unzip software-properties-common apt-transport-https ca-certificates gnupg lsb-release</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Configure automatic security updates</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt install <span class="at">-y</span> unattended-upgrades</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> dpkg-reconfigure <span class="at">-plow</span> unattended-upgrades</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Set up firewall</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> ufw enable</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> ufw allow OpenSSH</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> ufw allow 80/tcp</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> ufw allow 443/tcp</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> ufw allow 8080/tcp</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> ufw allow 8443/tcp</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> ufw allow 9000/tcp</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Create application user</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> useradd <span class="at">-m</span> <span class="at">-s</span> /bin/bash mamatoto</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> usermod <span class="at">-aG</span> docker mamatoto</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> usermod <span class="at">-aG</span> sudo mamatoto</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Set up SSH key authentication for the application user</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> mkdir <span class="at">-p</span> /home/mamatoto/.ssh</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> cp ~/.ssh/authorized_keys /home/mamatoto/.ssh/</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> chown <span class="at">-R</span> mamatoto:mamatoto /home/mamatoto/.ssh</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> chmod 700 /home/mamatoto/.ssh</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> chmod 600 /home/mamatoto/.ssh/authorized_keys</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="domain-configuration-and-ssl-setup" class="level3">
+<h3 class="anchored" data-anchor-id="domain-configuration-and-ssl-setup">1.3 Domain Configuration and SSL Setup</h3>
+<p>Configure your domain to point to the static IP address:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># DNS Configuration (update your DNS provider)</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co"># A Record: mamatoto.yourdomain.com -&gt; YOUR_STATIC_IP</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># A Record: *.mamatoto.yourdomain.com -&gt; YOUR_STATIC_IP</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Example DNS records:</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co"># mamatoto.pharmaccess.org          IN A    34.123.45.67</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co"># openhim.mamatoto.pharmaccess.org  IN A    34.123.45.67</span></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co"># fhir.mamatoto.pharmaccess.org     IN A    34.123.45.67</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="co"># keycloak.mamatoto.pharmaccess.org IN A    34.123.45.67</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="part-2-development-environment-setup" class="level2">
+<h2 class="anchored" data-anchor-id="part-2-development-environment-setup">Part 2: Development Environment Setup</h2>
+<section id="prerequisites-installation" class="level3">
+<h3 class="anchored" data-anchor-id="prerequisites-installation">2.1 Prerequisites Installation</h3>
+<p>Install the required tools for local development and deployment:</p>
+<p><strong>Docker Installation:</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Install Docker</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-fsSL</span> https://get.docker.com <span class="at">-o</span> get-docker.sh</span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> sh get-docker.sh</span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Add current user to docker group</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> usermod <span class="at">-aG</span> docker <span class="va">$USER</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Install Docker Compose</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> curl <span class="at">-L</span> <span class="st">"https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-</span><span class="va">$(</span><span class="fu">uname</span> <span class="at">-s</span><span class="va">)</span><span class="st">-</span><span class="va">$(</span><span class="fu">uname</span> <span class="at">-m</span><span class="va">)</span><span class="st">"</span> <span class="at">-o</span> /usr/local/bin/docker-compose</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> chmod +x /usr/local/bin/docker-compose</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify installation</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> <span class="at">--version</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="ex">docker-compose</span> <span class="at">--version</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Instant OpenHIE v2 CLI Installation:</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Install Node.js 18 (required for Instant v2)</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-fsSL</span> https://deb.nodesource.com/setup_18.x <span class="kw">|</span> <span class="fu">sudo</span> <span class="at">-E</span> bash <span class="at">-</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt-get install <span class="at">-y</span> nodejs</span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Install Instant OpenHIE v2 CLI globally</span></span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> npm install <span class="at">-g</span> @jembi/instantohie</span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify installation</span></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="ex">instant</span> <span class="at">--version</span></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Initialize Instant OpenHIE (creates ~/.instant directory)</span></span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a><span class="ex">instant</span> init</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="repository-setup-and-configuration" class="level3">
+<h3 class="anchored" data-anchor-id="repository-setup-and-configuration">2.2 Repository Setup and Configuration</h3>
+<p><strong>Clone and Configure the HIE Repository:</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Clone the repository</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="fu">git</span> clone https://github.com/PharmAccess/MamaToto-HIE.git</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> MamaToto-HIE</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Create environment configuration from template</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> .env.example .env</span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Edit the environment file with your specific configuration</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a><span class="fu">nano</span> .env</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Environment Configuration (<code>.env</code> file):</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># ========================</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="co"># MAMATOTO HIE CONFIGURATION</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co"># ========================</span></span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Domain Configuration</span></span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="va">DOMAIN_NAME</span><span class="op">=</span>mamatoto.pharmaccess.org</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="va">FHIR_SERVER_URL</span><span class="op">=</span>https://fhir.mamatoto.pharmaccess.org/fhir</span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="va">OPENHIM_CORE_URL</span><span class="op">=</span>https://openhim.mamatoto.pharmaccess.org</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="va">KEYCLOAK_URL</span><span class="op">=</span>https://keycloak.mamatoto.pharmaccess.org</span>
+<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="co"># Database Configuration</span></span>
+<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="va">POSTGRES_USER</span><span class="op">=</span>mamatoto_user</span>
+<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="va">POSTGRES_PASSWORD</span><span class="op">=</span>SecurePassword123!</span>
+<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="va">POSTGRES_DB</span><span class="op">=</span>mamatoto_hie</span>
+<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="va">MONGO_INITDB_ROOT_USERNAME</span><span class="op">=</span>mongo_admin</span>
+<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="va">MONGO_INITDB_ROOT_PASSWORD</span><span class="op">=</span>MongoSecure456!</span>
+<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a><span class="co"># OpenHIM Configuration</span></span>
+<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a><span class="va">OPENHIM_ROOT_EMAIL</span><span class="op">=</span>admin@pharmaccess.org</span>
+<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a><span class="va">OPENHIM_ROOT_PASSWORD</span><span class="op">=</span>AdminPassword789!</span>
+<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a><span class="va">OPENHIM_MONGO_URL</span><span class="op">=</span>mongodb://mongo_admin:MongoSecure456!@mongo:27017/openhim<span class="pp">?</span>authSource=admin</span>
+<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a><span class="co"># Keycloak Configuration</span></span>
+<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a><span class="va">KEYCLOAK_ADMIN</span><span class="op">=</span>admin</span>
+<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a><span class="va">KEYCLOAK_ADMIN_PASSWORD</span><span class="op">=</span>KeycloakAdmin123!</span>
+<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a><span class="va">KC_DB_URL</span><span class="op">=</span>jdbc:postgresql://postgres-keycloak:5432/keycloak</span>
+<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a><span class="va">KC_DB_USERNAME</span><span class="op">=</span>keycloak_user</span>
+<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a><span class="va">KC_DB_PASSWORD</span><span class="op">=</span>KeycloakDB456!</span>
+<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a><span class="co"># FHIR Server Configuration</span></span>
+<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a><span class="va">HAPI_FHIR_DATASOURCE_URL</span><span class="op">=</span>jdbc:postgresql://postgres-fhir:5432/fhir</span>
+<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a><span class="va">HAPI_FHIR_DATASOURCE_USERNAME</span><span class="op">=</span>fhir_user</span>
+<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a><span class="va">HAPI_FHIR_DATASOURCE_PASSWORD</span><span class="op">=</span>FhirDB789!</span>
+<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a><span class="co"># WhatsApp Integration</span></span>
+<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a><span class="va">WHATSAPP_API_URL</span><span class="op">=</span>https://graph.facebook.com/v18.0</span>
+<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a><span class="va">WHATSAPP_ACCESS_TOKEN</span><span class="op">=</span>your_whatsapp_access_token</span>
+<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a><span class="va">WHATSAPP_VERIFY_TOKEN</span><span class="op">=</span>your_whatsapp_verify_token</span>
+<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a><span class="va">WHATSAPP_WEBHOOK_URL</span><span class="op">=</span>https://mamatoto.pharmaccess.org/whatsapp/webhook</span>
+<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a><span class="co"># Carepay Integration</span></span>
+<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a><span class="va">CAREPAY_API_URL</span><span class="op">=</span>https://api.carepay.com/v1</span>
+<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a><span class="va">CAREPAY_API_KEY</span><span class="op">=</span>your_carepay_api_key</span>
+<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a><span class="va">CAREPAY_CLIENT_ID</span><span class="op">=</span>your_carepay_client_id</span>
+<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a><span class="va">CAREPAY_CLIENT_SECRET</span><span class="op">=</span>your_carepay_client_secret</span>
+<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a><span class="co"># SSL Configuration</span></span>
+<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a><span class="va">SSL_CERT_PATH</span><span class="op">=</span>/opt/ssl/certs</span>
+<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a><span class="va">SSL_KEY_PATH</span><span class="op">=</span>/opt/ssl/private</span>
+<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a><span class="va">SSL_CA_PATH</span><span class="op">=</span>/opt/ssl/ca</span>
+<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a><span class="co"># Logging Configuration</span></span>
+<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a><span class="va">LOG_LEVEL</span><span class="op">=</span>info</span>
+<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a><span class="va">LOG_FORMAT</span><span class="op">=</span>json</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="part-3-understanding-the-mediators" class="level2">
+<h2 class="anchored" data-anchor-id="part-3-understanding-the-mediators">Part 3: Understanding the Mediators</h2>
+<p>Mediators are the core integration components that handle communication between different systems in the MamaToto HIE. Each mediator serves a specific purpose and follows the OpenHIM mediator pattern.</p>
+<section id="mediator-architecture-overview" class="level3">
+<h3 class="anchored" data-anchor-id="mediator-architecture-overview">3.1 Mediator Architecture Overview</h3>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">graph TB
+    subgraph "Mediator Layer Architecture"
+        subgraph "Incoming Requests"
+            WA_REQ[WhatsApp Webhook]
+            API_REQ[REST API Calls]
+            FHIR_REQ[FHIR Operations]
+        end
+        
+        subgraph "OpenHIM Core"
+            ROUTER[Request Router]
+            AUTH[Authentication]
+            AUDIT[Audit Logging]
+        end
+        
+        subgraph "Mediators"
+            WM[WhatsApp Mediator&lt;br/&gt;Message Processing]
+            CM[Carepay Mediator&lt;br/&gt;Payment Integration]
+            FM[FHIR Mediator&lt;br/&gt;Data Validation]
+            AM[Auth Mediator&lt;br/&gt;Token Management]
+            NM[Notification Mediator&lt;br/&gt;Multi-channel Alerts]
+        end
+        
+        subgraph "Target Systems"
+            WA_API[WhatsApp Business API]
+            CP_SYS[Carepay System]
+            FHIR_SRV[FHIR Server]
+            KC_SRV[Keycloak]
+            SMS_GW[SMS Gateway]
+        end
+    end
+    
+    WA_REQ --&gt; ROUTER
+    API_REQ --&gt; ROUTER
+    FHIR_REQ --&gt; ROUTER
+    
+    ROUTER --&gt; AUTH
+    AUTH --&gt; AUDIT
+    
+    AUDIT --&gt; WM
+    AUDIT --&gt; CM
+    AUDIT --&gt; FM
+    AUDIT --&gt; AM
+    AUDIT --&gt; NM
+    
+    WM --&gt; WA_API
+    CM --&gt; CP_SYS
+    FM --&gt; FHIR_SRV
+    AM --&gt; KC_SRV
+    NM --&gt; SMS_GW
+    NM --&gt; WA_API
+    
+    classDef request fill:#e3f2fd
+    classDef core fill:#e8f5e8
+    classDef mediator fill:#fff3e0
+    classDef target fill:#f3e5f5
+    
+    class WA_REQ,API_REQ,FHIR_REQ request
+    class ROUTER,AUTH,AUDIT core
+    class WM,CM,FM,AM,NM mediator
+    class WA_API,CP_SYS,FHIR_SRV,KC_SRV,SMS_GW target
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+</section>
+<section id="whatsapp-mediator---message-processing-engine" class="level3">
+<h3 class="anchored" data-anchor-id="whatsapp-mediator---message-processing-engine">3.2 WhatsApp Mediator - Message Processing Engine</h3>
+<p>The WhatsApp Mediator handles all WhatsApp Business API interactions for the maternal health enrollment workflow.</p>
+<p><strong>Key Capabilities:</strong> - <strong>Webhook Processing</strong>: Receives and validates WhatsApp webhook events - <strong>Conversation Management</strong>: Maintains conversation state and context - <strong>Message Routing</strong>: Routes different message types to appropriate handlers - <strong>Consent Framework</strong>: Manages user consent collection and validation - <strong>Language Support</strong>: Multi-language message templates and responses</p>
+<p><strong>Message Flow Architecture:</strong></p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">sequenceDiagram
+    participant User as Pregnant Mother
+    participant WA as WhatsApp API
+    participant WM as WhatsApp Mediator
+    participant CF as Consent Framework
+    participant FHIR as FHIR Server
+    participant CP as Carepay System
+    
+    User-&gt;&gt;WA: "Hi, I want to enroll"
+    WA-&gt;&gt;WM: Webhook: message received
+    
+    Note over WM: Parse message intent
+    
+    WM-&gt;&gt;CF: Check consent status
+    CF--&gt;&gt;WM: No consent found
+    
+    WM-&gt;&gt;WA: Send consent request
+    WA--&gt;&gt;User: "Do you consent to data processing?"
+    
+    User-&gt;&gt;WA: "Yes, I consent"
+    WA-&gt;&gt;WM: Webhook: consent received
+    
+    WM-&gt;&gt;CF: Record consent
+    CF--&gt;&gt;WM: Consent recorded
+    
+    WM-&gt;&gt;WA: Send enrollment form
+    WA--&gt;&gt;User: "Please provide your details..."
+    
+    User-&gt;&gt;WA: Provides personal information
+    WA-&gt;&gt;WM: Webhook: form data received
+    
+    Note over WM: Validate and structure data
+    
+    WM-&gt;&gt;FHIR: Create Patient resource
+    FHIR--&gt;&gt;WM: Patient created
+    
+    WM-&gt;&gt;CP: Create payment profile
+    CP--&gt;&gt;WM: Profile created
+    
+    WM-&gt;&gt;WA: Send confirmation
+    WA--&gt;&gt;User: "Enrollment successful!"
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+<p><strong>Consent Framework Implementation:</strong></p>
+<p>The consent framework ensures GDPR and healthcare data compliance:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode javascript code-with-copy"><code class="sourceCode javascript"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Consent Framework Structure</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="kw">const</span> consentFramework <span class="op">=</span> {</span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>  <span class="dt">consentTypes</span><span class="op">:</span> {</span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a>    <span class="dt">DATA_PROCESSING</span><span class="op">:</span> <span class="st">'data_processing'</span><span class="op">,</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a>    <span class="dt">MEDICAL_CARE</span><span class="op">:</span> <span class="st">'medical_care'</span><span class="op">,</span> </span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a>    <span class="dt">PAYMENT_PROCESSING</span><span class="op">:</span> <span class="st">'payment_processing'</span><span class="op">,</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a>    <span class="dt">COMMUNICATION</span><span class="op">:</span> <span class="st">'communication'</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>  }<span class="op">,</span></span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a>  <span class="dt">consentStatus</span><span class="op">:</span> {</span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a>    <span class="dt">PENDING</span><span class="op">:</span> <span class="st">'pending'</span><span class="op">,</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a>    <span class="dt">GRANTED</span><span class="op">:</span> <span class="st">'granted'</span><span class="op">,</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">DENIED</span><span class="op">:</span> <span class="st">'denied'</span><span class="op">,</span></span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    <span class="dt">WITHDRAWN</span><span class="op">:</span> <span class="st">'withdrawn'</span></span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a>  }<span class="op">,</span></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>  <span class="dt">requiredConsents</span><span class="op">:</span> [</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>    <span class="st">'DATA_PROCESSING'</span><span class="op">,</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>    <span class="st">'MEDICAL_CARE'</span><span class="op">,</span></span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a>    <span class="st">'PAYMENT_PROCESSING'</span></span>
+<span id="cb10-21"><a href="#cb10-21" aria-hidden="true" tabindex="-1"></a>  ]<span class="op">,</span></span>
+<span id="cb10-22"><a href="#cb10-22" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb10-23"><a href="#cb10-23" aria-hidden="true" tabindex="-1"></a>  <span class="dt">optionalConsents</span><span class="op">:</span> [</span>
+<span id="cb10-24"><a href="#cb10-24" aria-hidden="true" tabindex="-1"></a>    <span class="st">'COMMUNICATION'</span></span>
+<span id="cb10-25"><a href="#cb10-25" aria-hidden="true" tabindex="-1"></a>  ]</span>
+<span id="cb10-26"><a href="#cb10-26" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="carepay-mediator---payment-integration-hub" class="level3">
+<h3 class="anchored" data-anchor-id="carepay-mediator---payment-integration-hub">3.3 Carepay Mediator - Payment Integration Hub</h3>
+<p>The Carepay Mediator manages all financial transactions and payment-related operations.</p>
+<p><strong>Core Functions:</strong> - <strong>Subscriber Management</strong>: Creates and manages patient payment profiles - <strong>Transaction Processing</strong>: Handles payment transactions and claims - <strong>Wallet Operations</strong>: Manages digital wallet balance and transactions - <strong>Claims Processing</strong>: Submits and tracks healthcare claims - <strong>Reporting</strong>: Generates financial reports and analytics</p>
+<p><strong>Payment Integration Flow:</strong></p>
+<div class="cell" data-layout-align="default">
+<div class="cell-output-display">
+<div>
+<p></p><figure class="figure"><p></p>
+<div>
+<pre class="mermaid mermaid-js">graph LR
+    subgraph "Payment Workflow"
+        subgraph "Enrollment Phase"
+            E1[Patient Enrollment]
+            E2[Create Carepay Profile]
+            E3[Link to FHIR Patient]
+        end
+        
+        subgraph "Service Delivery"
+            S1[Healthcare Service]
+            S2[Generate Claim]
+            S3[Process Payment]
+        end
+        
+        subgraph "Financial Management"
+            F1[Wallet Balance Check]
+            F2[Transaction Logging]
+            F3[Financial Reporting]
+        end
+    end
+    
+    E1 --&gt; E2
+    E2 --&gt; E3
+    E3 --&gt; S1
+    S1 --&gt; S2
+    S2 --&gt; F1
+    F1 --&gt; S3
+    S3 --&gt; F2
+    F2 --&gt; F3
+    
+    classDef enroll fill:#e8f5e8
+    classDef service fill:#fff3e0
+    classDef finance fill:#f3e5f5
+    
+    class E1,E2,E3 enroll
+    class S1,S2,S3 service
+    class F1,F2,F3 finance
+</pre>
+</div>
+<p></p></figure><p></p>
+</div>
+</div>
+</div>
+</section>
+<section id="fhir-mediator---data-validation-and-transformation" class="level3">
+<h3 class="anchored" data-anchor-id="fhir-mediator---data-validation-and-transformation">3.4 FHIR Mediator - Data Validation and Transformation</h3>
+<p>The FHIR Mediator ensures all healthcare data meets FHIR R4 standards and maintains data quality.</p>
+<p><strong>Primary Responsibilities:</strong> - <strong>Data Validation</strong>: Validates all FHIR resources against profiles - <strong>Data Transformation</strong>: Converts between different data formats - <strong>Resource Relationships</strong>: Maintains referential integrity between resources - <strong>Search Optimization</strong>: Optimizes FHIR search queries - <strong>Audit Logging</strong>: Tracks all data access and modifications</p>
+</section>
+<section id="authentication-mediator---security-and-access-control" class="level3">
+<h3 class="anchored" data-anchor-id="authentication-mediator---security-and-access-control">3.5 Authentication Mediator - Security and Access Control</h3>
+<p>Manages JWT tokens, session validation, and access control across all HIE components.</p>
+</section>
+<section id="notification-mediator---multi-channel-communication" class="level3">
+<h3 class="anchored" data-anchor-id="notification-mediator---multi-channel-communication">3.6 Notification Mediator - Multi-Channel Communication</h3>
+<p>Handles SMS notifications, email alerts, and WhatsApp messages for various system events.</p>
+</section>
+</section>
+<section id="part-4-system-deployment" class="level2">
+<h2 class="anchored" data-anchor-id="part-4-system-deployment">Part 4: System Deployment</h2>
+<section id="production-deployment" class="level3">
+<h3 class="anchored" data-anchor-id="production-deployment">4.1 Production Deployment</h3>
+<p>Deploy the complete system using Instant OpenHIE v2:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb11"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Switch to the mamatoto user</span></span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> su <span class="at">-</span> mamatoto</span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Navigate to the project directory</span></span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> /home/mamatoto/MamaToto-HIE</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Start the complete HIE stack</span></span>
+<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="ex">instant</span> package up <span class="at">-p</span> mamatoto <span class="at">--env-file</span> .env</span>
+<span id="cb11-9"><a href="#cb11-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-10"><a href="#cb11-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify all services are running</span></span>
+<span id="cb11-11"><a href="#cb11-11" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> ps</span>
+<span id="cb11-12"><a href="#cb11-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-13"><a href="#cb11-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Check service health</span></span>
+<span id="cb11-14"><a href="#cb11-14" aria-hidden="true" tabindex="-1"></a><span class="ex">instant</span> package ps <span class="at">-p</span> mamatoto</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="service-verification" class="level3">
+<h3 class="anchored" data-anchor-id="service-verification">4.2 Service Verification</h3>
+<p><strong>Health Check Script:</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb12"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="co"># health-check.sh - Verify all services are operational</span></span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"=== MamaToto HIE Health Check ==="</span></span>
+<span id="cb12-5"><a href="#cb12-5" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"Timestamp: </span><span class="va">$(</span><span class="fu">date</span><span class="va">)</span><span class="st">"</span></span>
+<span id="cb12-6"><a href="#cb12-6" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">""</span></span>
+<span id="cb12-7"><a href="#cb12-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-8"><a href="#cb12-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Function to check HTTP endpoint</span></span>
+<span id="cb12-9"><a href="#cb12-9" aria-hidden="true" tabindex="-1"></a><span class="fu">check_endpoint()</span> <span class="kw">{</span></span>
+<span id="cb12-10"><a href="#cb12-10" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">name</span><span class="op">=</span><span class="va">$1</span></span>
+<span id="cb12-11"><a href="#cb12-11" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">url</span><span class="op">=</span><span class="va">$2</span></span>
+<span id="cb12-12"><a href="#cb12-12" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">expected_code</span><span class="op">=</span><span class="va">${3</span><span class="op">:-</span>200<span class="va">}</span></span>
+<span id="cb12-13"><a href="#cb12-13" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-14"><a href="#cb12-14" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="at">-n</span> <span class="st">"Checking </span><span class="va">$name</span><span class="st">... "</span></span>
+<span id="cb12-15"><a href="#cb12-15" aria-hidden="true" tabindex="-1"></a>    <span class="va">response</span><span class="op">=</span><span class="va">$(</span><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-o</span> /dev/null <span class="at">-w</span> <span class="st">"%{http_code}"</span> <span class="st">"</span><span class="va">$url</span><span class="st">"</span> <span class="at">--max-time</span> 10<span class="va">)</span></span>
+<span id="cb12-16"><a href="#cb12-16" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb12-17"><a href="#cb12-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">[</span> <span class="st">"</span><span class="va">$response</span><span class="st">"</span> <span class="ot">-eq</span> <span class="st">"</span><span class="va">$expected_code</span><span class="st">"</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb12-18"><a href="#cb12-18" aria-hidden="true" tabindex="-1"></a>        <span class="bu">echo</span> <span class="st">"✅ OK (</span><span class="va">$response</span><span class="st">)"</span></span>
+<span id="cb12-19"><a href="#cb12-19" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span></span>
+<span id="cb12-20"><a href="#cb12-20" aria-hidden="true" tabindex="-1"></a>        <span class="bu">echo</span> <span class="st">"❌ FAIL (</span><span class="va">$response</span><span class="st">)"</span></span>
+<span id="cb12-21"><a href="#cb12-21" aria-hidden="true" tabindex="-1"></a>    <span class="cf">fi</span></span>
+<span id="cb12-22"><a href="#cb12-22" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb12-23"><a href="#cb12-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-24"><a href="#cb12-24" aria-hidden="true" tabindex="-1"></a><span class="co"># Check all services</span></span>
+<span id="cb12-25"><a href="#cb12-25" aria-hidden="true" tabindex="-1"></a><span class="ex">check_endpoint</span> <span class="st">"Nginx Proxy"</span> <span class="st">"http://localhost"</span></span>
+<span id="cb12-26"><a href="#cb12-26" aria-hidden="true" tabindex="-1"></a><span class="ex">check_endpoint</span> <span class="st">"OpenHIM Core"</span> <span class="st">"http://localhost:8080/heartbeat"</span></span>
+<span id="cb12-27"><a href="#cb12-27" aria-hidden="true" tabindex="-1"></a><span class="ex">check_endpoint</span> <span class="st">"OpenHIM Console"</span> <span class="st">"http://localhost:9000"</span></span>
+<span id="cb12-28"><a href="#cb12-28" aria-hidden="true" tabindex="-1"></a><span class="ex">check_endpoint</span> <span class="st">"FHIR Server"</span> <span class="st">"http://localhost:8082/fhir/metadata"</span></span>
+<span id="cb12-29"><a href="#cb12-29" aria-hidden="true" tabindex="-1"></a><span class="ex">check_endpoint</span> <span class="st">"Keycloak"</span> <span class="st">"http://localhost:8180/auth/realms/mamatoto"</span></span>
+<span id="cb12-30"><a href="#cb12-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-31"><a href="#cb12-31" aria-hidden="true" tabindex="-1"></a><span class="co"># Check databases</span></span>
+<span id="cb12-32"><a href="#cb12-32" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">""</span></span>
+<span id="cb12-33"><a href="#cb12-33" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"=== Database Connectivity ==="</span></span>
+<span id="cb12-34"><a href="#cb12-34" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> exec <span class="at">-t</span> mamatoto_mongo_1 mongosh <span class="at">--eval</span> <span class="st">"db.adminCommand('ping')"</span> <span class="op">&gt;</span> /dev/null <span class="dv">2</span><span class="op">&gt;&amp;</span><span class="dv">1</span></span>
+<span id="cb12-35"><a href="#cb12-35" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">[</span> <span class="va">$?</span> <span class="ot">-eq</span> 0 <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb12-36"><a href="#cb12-36" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">"MongoDB: ✅ Connected"</span></span>
+<span id="cb12-37"><a href="#cb12-37" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span></span>
+<span id="cb12-38"><a href="#cb12-38" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">"MongoDB: ❌ Connection failed"</span></span>
+<span id="cb12-39"><a href="#cb12-39" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span>
+<span id="cb12-40"><a href="#cb12-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-41"><a href="#cb12-41" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> exec <span class="at">-t</span> mamatoto_postgres-fhir_1 pg_isready <span class="op">&gt;</span> /dev/null <span class="dv">2</span><span class="op">&gt;&amp;</span><span class="dv">1</span></span>
+<span id="cb12-42"><a href="#cb12-42" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">[</span> <span class="va">$?</span> <span class="ot">-eq</span> 0 <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb12-43"><a href="#cb12-43" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">"PostgreSQL (FHIR): ✅ Connected"</span></span>
+<span id="cb12-44"><a href="#cb12-44" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span></span>
+<span id="cb12-45"><a href="#cb12-45" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">"PostgreSQL (FHIR): ❌ Connection failed"</span></span>
+<span id="cb12-46"><a href="#cb12-46" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span>
+<span id="cb12-47"><a href="#cb12-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-48"><a href="#cb12-48" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> exec <span class="at">-t</span> mamatoto_postgres-keycloak_1 pg_isready <span class="op">&gt;</span> /dev/null <span class="dv">2</span><span class="op">&gt;&amp;</span><span class="dv">1</span></span>
+<span id="cb12-49"><a href="#cb12-49" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span> <span class="bu">[</span> <span class="va">$?</span> <span class="ot">-eq</span> 0 <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb12-50"><a href="#cb12-50" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">"PostgreSQL (Keycloak): ✅ Connected"</span></span>
+<span id="cb12-51"><a href="#cb12-51" aria-hidden="true" tabindex="-1"></a><span class="cf">else</span></span>
+<span id="cb12-52"><a href="#cb12-52" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">"PostgreSQL (Keycloak): ❌ Connection failed"</span></span>
+<span id="cb12-53"><a href="#cb12-53" aria-hidden="true" tabindex="-1"></a><span class="cf">fi</span></span>
+<span id="cb12-54"><a href="#cb12-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-55"><a href="#cb12-55" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">""</span></span>
+<span id="cb12-56"><a href="#cb12-56" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"=== System Resources ==="</span></span>
+<span id="cb12-57"><a href="#cb12-57" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"CPU Usage: </span><span class="va">$(</span><span class="ex">top</span> <span class="at">-bn1</span> <span class="kw">|</span> <span class="fu">grep</span> <span class="st">"Cpu(s)"</span> <span class="kw">|</span> <span class="fu">awk</span> <span class="st">'{print $2}'</span> <span class="kw">|</span> <span class="fu">awk</span> <span class="at">-F</span><span class="st">'%'</span> <span class="st">'{print $1}'</span><span class="va">)</span><span class="st">%"</span></span>
+<span id="cb12-58"><a href="#cb12-58" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"Memory Usage: </span><span class="va">$(</span><span class="fu">free</span> <span class="kw">|</span> <span class="fu">grep</span> Mem <span class="kw">|</span> <span class="fu">awk</span> <span class="st">'{printf("%.1f%%"), $3/$2 * 100.0}'</span><span class="va">)</span><span class="st">"</span></span>
+<span id="cb12-59"><a href="#cb12-59" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"Disk Usage: </span><span class="va">$(</span><span class="fu">df</span> <span class="at">-h</span> / <span class="kw">|</span> <span class="fu">awk</span> <span class="st">'NR==2{printf "%s", $5}'</span><span class="va">)</span><span class="st">"</span></span>
+<span id="cb12-60"><a href="#cb12-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb12-61"><a href="#cb12-61" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">""</span></span>
+<span id="cb12-62"><a href="#cb12-62" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"Health check completed."</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="container-management" class="level3">
+<h3 class="anchored" data-anchor-id="container-management">4.3 Container Management</h3>
+<p><strong>Useful Management Commands:</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb13"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># View logs for specific service</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="ex">instant</span> package logs <span class="at">-p</span> mamatoto <span class="at">--service</span> openhim-core</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Restart specific service</span></span>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="ex">instant</span> package restart <span class="at">-p</span> mamatoto <span class="at">--service</span> fhir-server</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Scale a service (if supported)</span></span>
+<span id="cb13-8"><a href="#cb13-8" aria-hidden="true" tabindex="-1"></a><span class="ex">docker-compose</span> <span class="at">-f</span> ~/.instant/packages/mamatoto/docker-compose.yml scale whatsapp-mediator=2</span>
+<span id="cb13-9"><a href="#cb13-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-10"><a href="#cb13-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Update a specific service</span></span>
+<span id="cb13-11"><a href="#cb13-11" aria-hidden="true" tabindex="-1"></a><span class="ex">instant</span> package pull <span class="at">-p</span> mamatoto <span class="at">--service</span> nginx</span>
+<span id="cb13-12"><a href="#cb13-12" aria-hidden="true" tabindex="-1"></a><span class="ex">instant</span> package up <span class="at">-p</span> mamatoto <span class="at">--service</span> nginx</span>
+<span id="cb13-13"><a href="#cb13-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-14"><a href="#cb13-14" aria-hidden="true" tabindex="-1"></a><span class="co"># Backup databases</span></span>
+<span id="cb13-15"><a href="#cb13-15" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/backup-databases.sh</span></span>
+<span id="cb13-16"><a href="#cb13-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-17"><a href="#cb13-17" aria-hidden="true" tabindex="-1"></a><span class="co"># Stop all services</span></span>
+<span id="cb13-18"><a href="#cb13-18" aria-hidden="true" tabindex="-1"></a><span class="ex">instant</span> package down <span class="at">-p</span> mamatoto</span>
+<span id="cb13-19"><a href="#cb13-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb13-20"><a href="#cb13-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Stop and remove all data (DESTRUCTIVE)</span></span>
+<span id="cb13-21"><a href="#cb13-21" aria-hidden="true" tabindex="-1"></a><span class="ex">instant</span> package down <span class="at">-p</span> mamatoto <span class="at">-v</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="part-5-comprehensive-troubleshooting-guide" class="level2">
+<h2 class="anchored" data-anchor-id="part-5-comprehensive-troubleshooting-guide">Part 5: Comprehensive Troubleshooting Guide</h2>
+<section id="common-deployment-issues" class="level3">
+<h3 class="anchored" data-anchor-id="common-deployment-issues">5.1 Common Deployment Issues</h3>
+<section id="issue-container-start-failures" class="level4">
+<h4 class="anchored" data-anchor-id="issue-container-start-failures">Issue: Container Start Failures</h4>
+<p><strong>Symptoms:</strong> - Containers exit immediately after starting - “Port already in use” errors - Database connection failures</p>
+<p><strong>Diagnosis Commands:</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb14"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check container status</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> ps <span class="at">-a</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a><span class="co"># View container logs</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> logs <span class="op">&lt;</span>container_name<span class="op">&gt;</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-7"><a href="#cb14-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Check port usage</span></span>
+<span id="cb14-8"><a href="#cb14-8" aria-hidden="true" tabindex="-1"></a><span class="fu">netstat</span> <span class="at">-tulpn</span> <span class="kw">|</span> <span class="fu">grep</span> :8080</span>
+<span id="cb14-9"><a href="#cb14-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb14-10"><a href="#cb14-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Check available resources</span></span>
+<span id="cb14-11"><a href="#cb14-11" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> system df</span>
+<span id="cb14-12"><a href="#cb14-12" aria-hidden="true" tabindex="-1"></a><span class="fu">free</span> <span class="at">-h</span></span>
+<span id="cb14-13"><a href="#cb14-13" aria-hidden="true" tabindex="-1"></a><span class="fu">df</span> <span class="at">-h</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Solutions:</strong></p>
+<ol type="1">
+<li><strong>Port Conflicts:</strong></li>
+</ol>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb15"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Find process using the port</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> lsof <span class="at">-i</span> :8080</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Kill the conflicting process</span></span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> kill <span class="at">-9</span> <span class="op">&lt;</span>PID<span class="op">&gt;</span></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Or change the port in .env file</span></span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"OPENHIM_CORE_HTTP_PORT=8081"</span> <span class="op">&gt;&gt;</span> .env</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ol start="2" type="1">
+<li><strong>Insufficient Resources:</strong></li>
+</ol>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb16"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check Docker resource limits</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> system info</span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Increase VM resources in GCP Console</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Or add swap space</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> fallocate <span class="at">-l</span> 2G /swapfile</span>
+<span id="cb16-7"><a href="#cb16-7" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> chmod 600 /swapfile</span>
+<span id="cb16-8"><a href="#cb16-8" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> mkswap /swapfile</span>
+<span id="cb16-9"><a href="#cb16-9" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> swapon /swapfile</span>
+<span id="cb16-10"><a href="#cb16-10" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">'/swapfile none swap sw 0 0'</span> <span class="kw">|</span> <span class="fu">sudo</span> tee <span class="at">-a</span> /etc/fstab</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ol start="3" type="1">
+<li><strong>Database Initialization Issues:</strong></li>
+</ol>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb17"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Reset database volumes</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> volume ls <span class="kw">|</span> <span class="fu">grep</span> mamatoto</span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> volume rm mamatoto_mongo_data mamatoto_postgres_data</span>
+<span id="cb17-4"><a href="#cb17-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb17-5"><a href="#cb17-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Restart with fresh databases</span></span>
+<span id="cb17-6"><a href="#cb17-6" aria-hidden="true" tabindex="-1"></a><span class="ex">instant</span> package up <span class="at">-p</span> mamatoto</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="issue-ssltls-certificate-problems" class="level4">
+<h4 class="anchored" data-anchor-id="issue-ssltls-certificate-problems">Issue: SSL/TLS Certificate Problems</h4>
+<p><strong>Symptoms:</strong> - Browser security warnings - SSL handshake failures - Certificate verification errors</p>
+<p><strong>Diagnosis:</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb18"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check certificate validity</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a><span class="ex">openssl</span> x509 <span class="at">-in</span> /opt/ssl/certs/mamatoto.crt <span class="at">-text</span> <span class="at">-noout</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Test SSL connection</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a><span class="ex">openssl</span> s_client <span class="at">-connect</span> mamatoto.pharmaccess.org:443 <span class="at">-servername</span> mamatoto.pharmaccess.org</span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb18-7"><a href="#cb18-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Check certificate chain</span></span>
+<span id="cb18-8"><a href="#cb18-8" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-I</span> https://mamatoto.pharmaccess.org</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Solutions:</strong></p>
+<ol type="1">
+<li><strong>Generate New Certificates:</strong></li>
+</ol>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb19"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Run the SSL setup script</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/ssl-setup.sh</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Or use Let's Encrypt</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> apt install certbot</span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> certbot certonly <span class="at">--standalone</span> <span class="at">-d</span> mamatoto.pharmaccess.org</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ol start="2" type="1">
+<li><strong>Update Certificate Paths:</strong></li>
+</ol>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb20"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Update nginx configuration</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a><span class="fu">nano</span> /opt/ssl/nginx/default.conf</span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Restart nginx</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> restart mamatoto_nginx_1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="integration-issues" class="level3">
+<h3 class="anchored" data-anchor-id="integration-issues">5.2 Integration Issues</h3>
+<section id="issue-whatsapp-webhook-not-receiving-messages" class="level4">
+<h4 class="anchored" data-anchor-id="issue-whatsapp-webhook-not-receiving-messages">Issue: WhatsApp Webhook Not Receiving Messages</h4>
+<p><strong>Symptoms:</strong> - WhatsApp messages not triggering webhook - 404 errors in webhook logs - Webhook verification failures</p>
+<p><strong>Diagnosis:</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb21"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check webhook endpoint</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-X</span> GET <span class="st">"https://mamatoto.pharmaccess.org/whatsapp/webhook?hub.verify_token=your_verify_token&amp;hub.challenge=challenge_string"</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Check mediator logs</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> logs mamatoto_whatsapp-mediator_1 <span class="at">-f</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Test local connectivity</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-X</span> POST http://localhost:3001/webhook <span class="at">-H</span> <span class="st">"Content-Type: application/json"</span> <span class="at">-d</span> <span class="st">'{"test": "message"}'</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Solutions:</strong></p>
+<ol type="1">
+<li><strong>Verify Webhook Configuration:</strong></li>
+</ol>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb22"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Update WhatsApp webhook URL in Facebook Developer Console</span></span>
+<span id="cb22-2"><a href="#cb22-2" aria-hidden="true" tabindex="-1"></a><span class="co"># URL: https://mamatoto.pharmaccess.org/whatsapp/webhook</span></span>
+<span id="cb22-3"><a href="#cb22-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Verify Token: (from .env file)</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ol start="2" type="1">
+<li><strong>Fix Firewall Issues:</strong></li>
+</ol>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb23"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Ensure firewall allows webhook traffic</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> ufw allow 443/tcp</span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> ufw status</span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a><span class="co"># Check GCP firewall rules</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="ex">gcloud</span> compute firewall-rules list <span class="at">--filter</span><span class="op">=</span><span class="st">"name:mamatoto"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="issue-fhir-server-connection-failures" class="level4">
+<h4 class="anchored" data-anchor-id="issue-fhir-server-connection-failures">Issue: FHIR Server Connection Failures</h4>
+<p><strong>Symptoms:</strong> - FHIR operations return 500 errors - Database connection timeouts - Resource validation failures</p>
+<p><strong>Diagnosis:</strong></p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb24"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check FHIR server health</span></span>
+<span id="cb24-2"><a href="#cb24-2" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> http://localhost:8082/fhir/metadata</span>
+<span id="cb24-3"><a href="#cb24-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-4"><a href="#cb24-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Check database connectivity</span></span>
+<span id="cb24-5"><a href="#cb24-5" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> exec <span class="at">-it</span> mamatoto_postgres-fhir_1 psql <span class="at">-U</span> fhir_user <span class="at">-d</span> fhir <span class="at">-c</span> <span class="st">"SELECT version();"</span></span>
+<span id="cb24-6"><a href="#cb24-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb24-7"><a href="#cb24-7" aria-hidden="true" tabindex="-1"></a><span class="co"># Check FHIR logs</span></span>
+<span id="cb24-8"><a href="#cb24-8" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> logs mamatoto_fhir-server_1 <span class="at">--tail</span> 100</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<p><strong>Solutions:</strong></p>
+<ol type="1">
+<li><strong>Database Connection Issues:</strong></li>
+</ol>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb25"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Restart PostgreSQL</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> restart mamatoto_postgres-fhir_1</span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Reset FHIR database</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> exec <span class="at">-it</span> mamatoto_postgres-fhir_1 psql <span class="at">-U</span> postgres <span class="at">-c</span> <span class="st">"DROP DATABASE fhir; CREATE DATABASE fhir OWNER fhir_user;"</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> restart mamatoto_fhir-server_1</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ol start="2" type="1">
+<li><strong>FHIR Validation Issues:</strong></li>
+</ol>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb26"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Check FHIR structure definitions</span></span>
+<span id="cb26-2"><a href="#cb26-2" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> http://localhost:8082/fhir/StructureDefinition</span>
+<span id="cb26-3"><a href="#cb26-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb26-4"><a href="#cb26-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Validate a specific resource</span></span>
+<span id="cb26-5"><a href="#cb26-5" aria-hidden="true" tabindex="-1"></a><span class="ex">curl</span> <span class="at">-X</span> POST http://localhost:8082/fhir/Patient/\$validate <span class="at">-H</span> <span class="st">"Content-Type: application/json"</span> <span class="at">-d</span> @patient-example.json</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="performance-optimization" class="level3">
+<h3 class="anchored" data-anchor-id="performance-optimization">5.3 Performance Optimization</h3>
+<section id="monitoring-commands" class="level4">
+<h4 class="anchored" data-anchor-id="monitoring-commands">Monitoring Commands</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb27"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Monitor container resource usage</span></span>
+<span id="cb27-2"><a href="#cb27-2" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> stats</span>
+<span id="cb27-3"><a href="#cb27-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-4"><a href="#cb27-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Check system performance</span></span>
+<span id="cb27-5"><a href="#cb27-5" aria-hidden="true" tabindex="-1"></a><span class="ex">htop</span></span>
+<span id="cb27-6"><a href="#cb27-6" aria-hidden="true" tabindex="-1"></a><span class="ex">iotop</span></span>
+<span id="cb27-7"><a href="#cb27-7" aria-hidden="true" tabindex="-1"></a><span class="ex">iostat</span> <span class="at">-x</span> 1</span>
+<span id="cb27-8"><a href="#cb27-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-9"><a href="#cb27-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Monitor network connections</span></span>
+<span id="cb27-10"><a href="#cb27-10" aria-hidden="true" tabindex="-1"></a><span class="fu">netstat</span> <span class="at">-an</span> <span class="kw">|</span> <span class="fu">grep</span> ESTABLISHED <span class="kw">|</span> <span class="fu">wc</span> <span class="at">-l</span></span>
+<span id="cb27-11"><a href="#cb27-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb27-12"><a href="#cb27-12" aria-hidden="true" tabindex="-1"></a><span class="co"># Check database performance</span></span>
+<span id="cb27-13"><a href="#cb27-13" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> exec <span class="at">-it</span> mamatoto_postgres-fhir_1 psql <span class="at">-U</span> fhir_user <span class="at">-d</span> fhir <span class="at">-c</span> <span class="st">"SELECT * FROM pg_stat_activity;"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="optimization-strategies" class="level4">
+<h4 class="anchored" data-anchor-id="optimization-strategies">Optimization Strategies</h4>
+<ol type="1">
+<li><strong>Database Tuning:</strong></li>
+</ol>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb28"><pre class="sourceCode sql code-with-copy"><code class="sourceCode sql"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="co">-- PostgreSQL performance tuning</span></span>
+<span id="cb28-2"><a href="#cb28-2" aria-hidden="true" tabindex="-1"></a><span class="kw">ALTER</span> <span class="kw">SYSTEM</span> <span class="kw">SET</span> shared_buffers <span class="op">=</span> <span class="st">'256MB'</span>;</span>
+<span id="cb28-3"><a href="#cb28-3" aria-hidden="true" tabindex="-1"></a><span class="kw">ALTER</span> <span class="kw">SYSTEM</span> <span class="kw">SET</span> effective_cache_size <span class="op">=</span> <span class="st">'1GB'</span>;</span>
+<span id="cb28-4"><a href="#cb28-4" aria-hidden="true" tabindex="-1"></a><span class="kw">ALTER</span> <span class="kw">SYSTEM</span> <span class="kw">SET</span> maintenance_work_mem <span class="op">=</span> <span class="st">'64MB'</span>;</span>
+<span id="cb28-5"><a href="#cb28-5" aria-hidden="true" tabindex="-1"></a><span class="kw">SELECT</span> pg_reload_conf();</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+<ol start="2" type="1">
+<li><strong>Container Resource Limits:</strong></li>
+</ol>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb29"><pre class="sourceCode yaml code-with-copy"><code class="sourceCode yaml"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="co"># docker-compose override</span></span>
+<span id="cb29-2"><a href="#cb29-2" aria-hidden="true" tabindex="-1"></a><span class="fu">version</span><span class="kw">:</span><span class="at"> </span><span class="st">'3.8'</span></span>
+<span id="cb29-3"><a href="#cb29-3" aria-hidden="true" tabindex="-1"></a><span class="fu">services</span><span class="kw">:</span></span>
+<span id="cb29-4"><a href="#cb29-4" aria-hidden="true" tabindex="-1"></a><span class="at">  </span><span class="fu">fhir-server</span><span class="kw">:</span></span>
+<span id="cb29-5"><a href="#cb29-5" aria-hidden="true" tabindex="-1"></a><span class="at">    </span><span class="fu">deploy</span><span class="kw">:</span></span>
+<span id="cb29-6"><a href="#cb29-6" aria-hidden="true" tabindex="-1"></a><span class="at">      </span><span class="fu">resources</span><span class="kw">:</span></span>
+<span id="cb29-7"><a href="#cb29-7" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">limits</span><span class="kw">:</span></span>
+<span id="cb29-8"><a href="#cb29-8" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">cpus</span><span class="kw">:</span><span class="at"> </span><span class="st">'2.0'</span></span>
+<span id="cb29-9"><a href="#cb29-9" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">memory</span><span class="kw">:</span><span class="at"> 2G</span></span>
+<span id="cb29-10"><a href="#cb29-10" aria-hidden="true" tabindex="-1"></a><span class="at">        </span><span class="fu">reservations</span><span class="kw">:</span></span>
+<span id="cb29-11"><a href="#cb29-11" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">cpus</span><span class="kw">:</span><span class="at"> </span><span class="st">'1.0'</span></span>
+<span id="cb29-12"><a href="#cb29-12" aria-hidden="true" tabindex="-1"></a><span class="at">          </span><span class="fu">memory</span><span class="kw">:</span><span class="at"> 1G</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="backup-and-recovery" class="level3">
+<h3 class="anchored" data-anchor-id="backup-and-recovery">5.4 Backup and Recovery</h3>
+<section id="automated-backup-script" class="level4">
+<h4 class="anchored" data-anchor-id="automated-backup-script">Automated Backup Script</h4>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb30"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb30-2"><a href="#cb30-2" aria-hidden="true" tabindex="-1"></a><span class="co"># backup-system.sh - Complete system backup</span></span>
+<span id="cb30-3"><a href="#cb30-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-4"><a href="#cb30-4" aria-hidden="true" tabindex="-1"></a><span class="va">BACKUP_DIR</span><span class="op">=</span><span class="st">"/opt/backups/</span><span class="va">$(</span><span class="fu">date</span> +%Y%m%d_%H%M%S<span class="va">)</span><span class="st">"</span></span>
+<span id="cb30-5"><a href="#cb30-5" aria-hidden="true" tabindex="-1"></a><span class="fu">mkdir</span> <span class="at">-p</span> <span class="va">$BACKUP_DIR</span></span>
+<span id="cb30-6"><a href="#cb30-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-7"><a href="#cb30-7" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"Starting MamaToto HIE backup..."</span></span>
+<span id="cb30-8"><a href="#cb30-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-9"><a href="#cb30-9" aria-hidden="true" tabindex="-1"></a><span class="co"># Backup databases</span></span>
+<span id="cb30-10"><a href="#cb30-10" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"Backing up MongoDB..."</span></span>
+<span id="cb30-11"><a href="#cb30-11" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> exec mamatoto_mongo_1 mongodump <span class="at">--out</span> /tmp/backup</span>
+<span id="cb30-12"><a href="#cb30-12" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> cp mamatoto_mongo_1:/tmp/backup <span class="va">$BACKUP_DIR</span>/mongodb</span>
+<span id="cb30-13"><a href="#cb30-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-14"><a href="#cb30-14" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"Backing up PostgreSQL (FHIR)..."</span></span>
+<span id="cb30-15"><a href="#cb30-15" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> exec mamatoto_postgres-fhir_1 pg_dump <span class="at">-U</span> fhir_user fhir <span class="op">&gt;</span> <span class="va">$BACKUP_DIR</span>/fhir-db.sql</span>
+<span id="cb30-16"><a href="#cb30-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-17"><a href="#cb30-17" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"Backing up PostgreSQL (Keycloak)..."</span></span>
+<span id="cb30-18"><a href="#cb30-18" aria-hidden="true" tabindex="-1"></a><span class="ex">docker</span> exec mamatoto_postgres-keycloak_1 pg_dump <span class="at">-U</span> keycloak_user keycloak <span class="op">&gt;</span> <span class="va">$BACKUP_DIR</span>/keycloak-db.sql</span>
+<span id="cb30-19"><a href="#cb30-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-20"><a href="#cb30-20" aria-hidden="true" tabindex="-1"></a><span class="co"># Backup configurations</span></span>
+<span id="cb30-21"><a href="#cb30-21" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"Backing up configurations..."</span></span>
+<span id="cb30-22"><a href="#cb30-22" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> <span class="at">-r</span> ~/.instant/packages/mamatoto <span class="va">$BACKUP_DIR</span>/config</span>
+<span id="cb30-23"><a href="#cb30-23" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> .env <span class="va">$BACKUP_DIR</span>/env-config</span>
+<span id="cb30-24"><a href="#cb30-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-25"><a href="#cb30-25" aria-hidden="true" tabindex="-1"></a><span class="co"># Backup SSL certificates</span></span>
+<span id="cb30-26"><a href="#cb30-26" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"Backing up SSL certificates..."</span></span>
+<span id="cb30-27"><a href="#cb30-27" aria-hidden="true" tabindex="-1"></a><span class="fu">cp</span> <span class="at">-r</span> /opt/ssl <span class="va">$BACKUP_DIR</span>/ssl</span>
+<span id="cb30-28"><a href="#cb30-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-29"><a href="#cb30-29" aria-hidden="true" tabindex="-1"></a><span class="co"># Create archive</span></span>
+<span id="cb30-30"><a href="#cb30-30" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"Creating backup archive..."</span></span>
+<span id="cb30-31"><a href="#cb30-31" aria-hidden="true" tabindex="-1"></a><span class="fu">tar</span> <span class="at">-czf</span> <span class="va">$BACKUP_DIR</span>.tar.gz <span class="at">-C</span> <span class="va">$(</span><span class="fu">dirname</span> <span class="va">$BACKUP_DIR)</span> <span class="va">$(</span><span class="fu">basename</span> <span class="va">$BACKUP_DIR)</span></span>
+<span id="cb30-32"><a href="#cb30-32" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span> <span class="at">-rf</span> <span class="va">$BACKUP_DIR</span></span>
+<span id="cb30-33"><a href="#cb30-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-34"><a href="#cb30-34" aria-hidden="true" tabindex="-1"></a><span class="bu">echo</span> <span class="st">"Backup completed: </span><span class="va">$BACKUP_DIR</span><span class="st">.tar.gz"</span></span>
+<span id="cb30-35"><a href="#cb30-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-36"><a href="#cb30-36" aria-hidden="true" tabindex="-1"></a><span class="co"># Cleanup old backups (keep last 7 days)</span></span>
+<span id="cb30-37"><a href="#cb30-37" aria-hidden="true" tabindex="-1"></a><span class="fu">find</span> /opt/backups <span class="at">-name</span> <span class="st">"*.tar.gz"</span> <span class="at">-mtime</span> +7 <span class="at">-delete</span></span>
+<span id="cb30-38"><a href="#cb30-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb30-39"><a href="#cb30-39" aria-hidden="true" tabindex="-1"></a><span class="co"># Upload to Google Cloud Storage (optional)</span></span>
+<span id="cb30-40"><a href="#cb30-40" aria-hidden="true" tabindex="-1"></a><span class="co"># gsutil cp $BACKUP_DIR.tar.gz gs://mamatoto-backups/</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+</section>
+<section id="part-6-maintenance-and-monitoring" class="level2">
+<h2 class="anchored" data-anchor-id="part-6-maintenance-and-monitoring">Part 6: Maintenance and Monitoring</h2>
+<section id="system-monitoring-dashboard" class="level3">
+<h3 class="anchored" data-anchor-id="system-monitoring-dashboard">6.1 System Monitoring Dashboard</h3>
+<p>Create a simple monitoring script to track system health:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb31"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a><span class="co"># monitor.sh - System monitoring dashboard</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a><span class="cf">while</span> <span class="fu">true</span><span class="kw">;</span> <span class="cf">do</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>    <span class="fu">clear</span></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">"=================================================="</span></span>
+<span id="cb31-7"><a href="#cb31-7" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">"MamaToto HIE System Monitor - </span><span class="va">$(</span><span class="fu">date</span><span class="va">)</span><span class="st">"</span></span>
+<span id="cb31-8"><a href="#cb31-8" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">"=================================================="</span></span>
+<span id="cb31-9"><a href="#cb31-9" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">""</span></span>
+<span id="cb31-10"><a href="#cb31-10" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb31-11"><a href="#cb31-11" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Container Status</span></span>
+<span id="cb31-12"><a href="#cb31-12" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">"📦 Container Status:"</span></span>
+<span id="cb31-13"><a href="#cb31-13" aria-hidden="true" tabindex="-1"></a>    <span class="ex">docker</span> ps <span class="at">--format</span> <span class="st">"table {{.Names}}\t{{.Status}}\t{{.Ports}}"</span> <span class="kw">|</span> <span class="fu">grep</span> mamatoto</span>
+<span id="cb31-14"><a href="#cb31-14" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">""</span></span>
+<span id="cb31-15"><a href="#cb31-15" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb31-16"><a href="#cb31-16" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Resource Usage</span></span>
+<span id="cb31-17"><a href="#cb31-17" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">"💻 System Resources:"</span></span>
+<span id="cb31-18"><a href="#cb31-18" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">"CPU: </span><span class="va">$(</span><span class="fu">grep</span> <span class="st">'cpu '</span> /proc/stat <span class="kw">|</span> <span class="fu">awk</span> <span class="st">'{usage=($2+$4)*100/($2+$4+$5)} END {print usage "%"}'</span><span class="va">)</span><span class="st">"</span></span>
+<span id="cb31-19"><a href="#cb31-19" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">"Memory: </span><span class="va">$(</span><span class="fu">free</span> <span class="kw">|</span> <span class="fu">grep</span> Mem <span class="kw">|</span> <span class="fu">awk</span> <span class="st">'{printf("%.1f%%"), $3/$2 * 100.0}'</span><span class="va">)</span><span class="st">"</span></span>
+<span id="cb31-20"><a href="#cb31-20" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">"Disk: </span><span class="va">$(</span><span class="fu">df</span> <span class="at">-h</span> / <span class="kw">|</span> <span class="fu">awk</span> <span class="st">'NR==2{printf "%s", $5}'</span><span class="va">)</span><span class="st">"</span></span>
+<span id="cb31-21"><a href="#cb31-21" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">""</span></span>
+<span id="cb31-22"><a href="#cb31-22" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb31-23"><a href="#cb31-23" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Network Connections</span></span>
+<span id="cb31-24"><a href="#cb31-24" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">"🌐 Active Connections:"</span></span>
+<span id="cb31-25"><a href="#cb31-25" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">"Total: </span><span class="va">$(</span><span class="fu">netstat</span> <span class="at">-an</span> <span class="kw">|</span> <span class="fu">grep</span> ESTABLISHED <span class="kw">|</span> <span class="fu">wc</span> <span class="at">-l</span><span class="va">)</span><span class="st">"</span></span>
+<span id="cb31-26"><a href="#cb31-26" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">"Port 443: </span><span class="va">$(</span><span class="fu">netstat</span> <span class="at">-an</span> <span class="kw">|</span> <span class="fu">grep</span> :443 <span class="kw">|</span> <span class="fu">grep</span> ESTABLISHED <span class="kw">|</span> <span class="fu">wc</span> <span class="at">-l</span><span class="va">)</span><span class="st">"</span></span>
+<span id="cb31-27"><a href="#cb31-27" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">"Port 8080: </span><span class="va">$(</span><span class="fu">netstat</span> <span class="at">-an</span> <span class="kw">|</span> <span class="fu">grep</span> :8080 <span class="kw">|</span> <span class="fu">grep</span> ESTABLISHED <span class="kw">|</span> <span class="fu">wc</span> <span class="at">-l</span><span class="va">)</span><span class="st">"</span></span>
+<span id="cb31-28"><a href="#cb31-28" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">""</span></span>
+<span id="cb31-29"><a href="#cb31-29" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb31-30"><a href="#cb31-30" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Recent Logs (last 5 minutes)</span></span>
+<span id="cb31-31"><a href="#cb31-31" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">"📋 Recent Activity:"</span></span>
+<span id="cb31-32"><a href="#cb31-32" aria-hidden="true" tabindex="-1"></a>    <span class="ex">docker</span> logs mamatoto_openhim-core_1 <span class="at">--since</span><span class="op">=</span>5m <span class="at">--tail</span><span class="op">=</span>5 <span class="dv">2</span><span class="op">&gt;</span>/dev/null <span class="kw">|</span> <span class="fu">tail</span> <span class="at">-3</span></span>
+<span id="cb31-33"><a href="#cb31-33" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">""</span></span>
+<span id="cb31-34"><a href="#cb31-34" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb31-35"><a href="#cb31-35" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">"Press Ctrl+C to exit"</span></span>
+<span id="cb31-36"><a href="#cb31-36" aria-hidden="true" tabindex="-1"></a>    <span class="fu">sleep</span> 30</span>
+<span id="cb31-37"><a href="#cb31-37" aria-hidden="true" tabindex="-1"></a><span class="cf">done</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="automated-health-checks" class="level3">
+<h3 class="anchored" data-anchor-id="automated-health-checks">6.2 Automated Health Checks</h3>
+<p>Set up automated health checks with email notifications:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb32"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="co">#!/bin/bash</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a><span class="co"># health-monitor.sh - Automated health monitoring with alerts</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-4"><a href="#cb32-4" aria-hidden="true" tabindex="-1"></a><span class="va">EMAIL</span><span class="op">=</span><span class="st">"admin@pharmaccess.org"</span></span>
+<span id="cb32-5"><a href="#cb32-5" aria-hidden="true" tabindex="-1"></a><span class="va">WEBHOOK_URL</span><span class="op">=</span><span class="st">"https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK"</span></span>
+<span id="cb32-6"><a href="#cb32-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-7"><a href="#cb32-7" aria-hidden="true" tabindex="-1"></a><span class="fu">check_service()</span> <span class="kw">{</span></span>
+<span id="cb32-8"><a href="#cb32-8" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">service_name</span><span class="op">=</span><span class="va">$1</span></span>
+<span id="cb32-9"><a href="#cb32-9" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">check_url</span><span class="op">=</span><span class="va">$2</span></span>
+<span id="cb32-10"><a href="#cb32-10" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">expected_code</span><span class="op">=</span><span class="va">${3</span><span class="op">:-</span>200<span class="va">}</span></span>
+<span id="cb32-11"><a href="#cb32-11" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb32-12"><a href="#cb32-12" aria-hidden="true" tabindex="-1"></a>    <span class="va">response</span><span class="op">=</span><span class="va">$(</span><span class="ex">curl</span> <span class="at">-s</span> <span class="at">-o</span> /dev/null <span class="at">-w</span> <span class="st">"%{http_code}"</span> <span class="st">"</span><span class="va">$check_url</span><span class="st">"</span> <span class="at">--max-time</span> 10<span class="va">)</span></span>
+<span id="cb32-13"><a href="#cb32-13" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb32-14"><a href="#cb32-14" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="bu">[</span> <span class="st">"</span><span class="va">$response</span><span class="st">"</span> <span class="ot">-ne</span> <span class="st">"</span><span class="va">$expected_code</span><span class="st">"</span> <span class="bu">]</span><span class="kw">;</span> <span class="cf">then</span></span>
+<span id="cb32-15"><a href="#cb32-15" aria-hidden="true" tabindex="-1"></a>        <span class="ex">send_alert</span> <span class="st">"</span><span class="va">$service_name</span><span class="st">"</span> <span class="st">"</span><span class="va">$check_url</span><span class="st">"</span> <span class="st">"</span><span class="va">$response</span><span class="st">"</span></span>
+<span id="cb32-16"><a href="#cb32-16" aria-hidden="true" tabindex="-1"></a>        <span class="cf">return</span> <span class="dv">1</span></span>
+<span id="cb32-17"><a href="#cb32-17" aria-hidden="true" tabindex="-1"></a>    <span class="cf">fi</span></span>
+<span id="cb32-18"><a href="#cb32-18" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span></span>
+<span id="cb32-19"><a href="#cb32-19" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb32-20"><a href="#cb32-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-21"><a href="#cb32-21" aria-hidden="true" tabindex="-1"></a><span class="fu">send_alert()</span> <span class="kw">{</span></span>
+<span id="cb32-22"><a href="#cb32-22" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">service</span><span class="op">=</span><span class="va">$1</span></span>
+<span id="cb32-23"><a href="#cb32-23" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">url</span><span class="op">=</span><span class="va">$2</span></span>
+<span id="cb32-24"><a href="#cb32-24" aria-hidden="true" tabindex="-1"></a>    <span class="bu">local</span> <span class="va">code</span><span class="op">=</span><span class="va">$3</span></span>
+<span id="cb32-25"><a href="#cb32-25" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb32-26"><a href="#cb32-26" aria-hidden="true" tabindex="-1"></a>    <span class="va">message</span><span class="op">=</span><span class="st">"🚨 ALERT: </span><span class="va">$service</span><span class="st"> is down (HTTP </span><span class="va">$code</span><span class="st">) - </span><span class="va">$url</span><span class="st">"</span></span>
+<span id="cb32-27"><a href="#cb32-27" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb32-28"><a href="#cb32-28" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Send email</span></span>
+<span id="cb32-29"><a href="#cb32-29" aria-hidden="true" tabindex="-1"></a>    <span class="bu">echo</span> <span class="st">"</span><span class="va">$message</span><span class="st">"</span> <span class="kw">|</span> <span class="ex">mail</span> <span class="at">-s</span> <span class="st">"MamaToto HIE Alert"</span> <span class="st">"</span><span class="va">$EMAIL</span><span class="st">"</span></span>
+<span id="cb32-30"><a href="#cb32-30" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb32-31"><a href="#cb32-31" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Send Slack notification</span></span>
+<span id="cb32-32"><a href="#cb32-32" aria-hidden="true" tabindex="-1"></a>    <span class="ex">curl</span> <span class="at">-X</span> POST <span class="at">-H</span> <span class="st">'Content-type: application/json'</span> <span class="dt">\</span></span>
+<span id="cb32-33"><a href="#cb32-33" aria-hidden="true" tabindex="-1"></a>        <span class="at">--data</span> <span class="st">"{</span><span class="dt">\"</span><span class="st">text</span><span class="dt">\"</span><span class="st">:</span><span class="dt">\"</span><span class="va">$message</span><span class="dt">\"</span><span class="st">}"</span> <span class="dt">\</span></span>
+<span id="cb32-34"><a href="#cb32-34" aria-hidden="true" tabindex="-1"></a>        <span class="st">"</span><span class="va">$WEBHOOK_URL</span><span class="st">"</span></span>
+<span id="cb32-35"><a href="#cb32-35" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb32-36"><a href="#cb32-36" aria-hidden="true" tabindex="-1"></a>    <span class="co"># Log to syslog</span></span>
+<span id="cb32-37"><a href="#cb32-37" aria-hidden="true" tabindex="-1"></a>    <span class="ex">logger</span> <span class="at">-t</span> mamatoto-monitor <span class="st">"</span><span class="va">$message</span><span class="st">"</span></span>
+<span id="cb32-38"><a href="#cb32-38" aria-hidden="true" tabindex="-1"></a><span class="kw">}</span></span>
+<span id="cb32-39"><a href="#cb32-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb32-40"><a href="#cb32-40" aria-hidden="true" tabindex="-1"></a><span class="co"># Run health checks</span></span>
+<span id="cb32-41"><a href="#cb32-41" aria-hidden="true" tabindex="-1"></a><span class="ex">check_service</span> <span class="st">"OpenHIM Core"</span> <span class="st">"http://localhost:8080/heartbeat"</span></span>
+<span id="cb32-42"><a href="#cb32-42" aria-hidden="true" tabindex="-1"></a><span class="ex">check_service</span> <span class="st">"FHIR Server"</span> <span class="st">"http://localhost:8082/fhir/metadata"</span></span>
+<span id="cb32-43"><a href="#cb32-43" aria-hidden="true" tabindex="-1"></a><span class="ex">check_service</span> <span class="st">"Keycloak"</span> <span class="st">"http://localhost:8180/auth/realms/mamatoto"</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="log-management" class="level3">
+<h3 class="anchored" data-anchor-id="log-management">6.3 Log Management</h3>
+<p>Configure log rotation and management:</p>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb33"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="co"># /etc/logrotate.d/docker-containers</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a><span class="ex">/var/lib/docker/containers/*/*.log</span> {</span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>    <span class="ex">rotate</span> 7</span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>    <span class="ex">daily</span></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>    <span class="ex">compress</span></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a>    <span class="fu">size</span> 10M</span>
+<span id="cb33-7"><a href="#cb33-7" aria-hidden="true" tabindex="-1"></a>    <span class="ex">missingok</span></span>
+<span id="cb33-8"><a href="#cb33-8" aria-hidden="true" tabindex="-1"></a>    <span class="ex">delaycompress</span></span>
+<span id="cb33-9"><a href="#cb33-9" aria-hidden="true" tabindex="-1"></a>    <span class="ex">copytruncate</span></span>
+<span id="cb33-10"><a href="#cb33-10" aria-hidden="true" tabindex="-1"></a><span class="er">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>This comprehensive getting started guide provides everything needed to set up, deploy, and maintain the MamaToto HIE system. The combination of detailed setup instructions, visual architecture diagrams, troubleshooting procedures, and maintenance scripts ensures that new developers can quickly understand and work with the system.</p>
+<section id="quick-reference-commands" class="level3">
+<h3 class="anchored" data-anchor-id="quick-reference-commands">Quick Reference Commands</h3>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb34"><pre class="sourceCode bash code-with-copy"><code class="sourceCode bash"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Start the system</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a><span class="ex">instant</span> package up <span class="at">-p</span> mamatoto</span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a><span class="co"># Check system health</span></span>
+<span id="cb34-5"><a href="#cb34-5" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/health-check.sh</span></span>
+<span id="cb34-6"><a href="#cb34-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-7"><a href="#cb34-7" aria-hidden="true" tabindex="-1"></a><span class="co"># View logs</span></span>
+<span id="cb34-8"><a href="#cb34-8" aria-hidden="true" tabindex="-1"></a><span class="ex">instant</span> package logs <span class="at">-p</span> mamatoto <span class="at">--service</span> openhim-core</span>
+<span id="cb34-9"><a href="#cb34-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-10"><a href="#cb34-10" aria-hidden="true" tabindex="-1"></a><span class="co"># Backup system</span></span>
+<span id="cb34-11"><a href="#cb34-11" aria-hidden="true" tabindex="-1"></a><span class="ex">./scripts/backup-system.sh</span></span>
+<span id="cb34-12"><a href="#cb34-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb34-13"><a href="#cb34-13" aria-hidden="true" tabindex="-1"></a><span class="co"># Stop the system</span></span>
+<span id="cb34-14"><a href="#cb34-14" aria-hidden="true" tabindex="-1"></a><span class="ex">instant</span> package down <span class="at">-p</span> mamatoto</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</section>
+<section id="next-steps" class="level3">
+<h3 class="anchored" data-anchor-id="next-steps">Next Steps</h3>
+<ol type="1">
+<li><strong>Review the architecture documentation</strong> in the Architecture section</li>
+<li><strong>Explore individual mediator details</strong> in the Mediators section<br>
+</li>
+<li><strong>Configure SSL certificates</strong> using the SSL/TLS Management guide</li>
+<li><strong>Set up monitoring</strong> using the provided scripts</li>
+<li><strong>Join the development team</strong> communication channels for support</li>
+</ol>
+<p>For additional support, consult the detailed documentation sections or contact the PharmAccess development team.</p>
+
+
+</section>
+</section>
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp("https:\/\/PharmAccess\.github\.io\/hdc-documentation\/");
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
