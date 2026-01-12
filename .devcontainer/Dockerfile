@@ -53,14 +53,6 @@ RUN wget https://github.com/quarto-dev/quarto-cli/releases/download/v1.6.42/quar
     dpkg -i quarto-1.6.42-linux-amd64.deb || apt-get install -f -y && \
     rm quarto-1.6.42-linux-amd64.deb
 
-# Install Go using the official binary distribution (if needed at runtime)
-ENV GO_VERSION=1.22.11
-RUN wget https://golang.org/dl/go${GO_VERSION}.linux-amd64.tar.gz && \
-    tar -C /usr/local -xzf go${GO_VERSION}.linux-amd64.tar.gz && \
-    rm go${GO_VERSION}.linux-amd64.tar.gz && \
-    ln -s /usr/local/go/bin/go /usr/local/bin/go && \
-    ln -s /usr/local/go/bin/gofmt /usr/local/bin/gofmt
-ENV PATH="/usr/local/go/bin:${PATH}"
 
 # Install Python and other libraries via mamba
 RUN mamba install --yes \

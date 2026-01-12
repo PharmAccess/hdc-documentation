@@ -10,7 +10,7 @@
     "customizations": {
         "vscode": {
             "settings": {
-                "terminal.integrated.shell.linux": "/bin/bash",
+                "terminal.integrated.defaultProfile.linux": "bash",
                 "git.confirmSync": false,
                 "git.autofetch": true,
                 "jupyter.askForKernelRestart": false,
