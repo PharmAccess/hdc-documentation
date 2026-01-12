@@ -1,0 +1,46 @@
+{
+    "name": "Quarto Dev Container",
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": "..",
+        "args": {
+            "VARIANT": "quarto"
+        }
+    },
+    "customizations": {
+        "vscode": {
+            "settings": {
+                "terminal.integrated.shell.linux": "/bin/bash",
+                "git.confirmSync": false,
+                "git.autofetch": true,
+                "jupyter.askForKernelRestart": false,
+                "jupyter.interactiveWindow.textEditor.executeSelection": true,
+                "jupyter.notebookFileRoot": "${workspaceRoot}",
+                "files.eol": "\n"
+            },
+            "extensions": [
+                "quarto.quarto",
+                "ms-python.python",
+                "ms-python.vscode-pylance",
+                "ms-toolsai.jupyter",
+                "ms-azuretools.vscode-docker",
+                "eamodio.gitlens",
+                "GitHub.vscode-pull-request-github",
+                "GitHub.copilot",
+                "GitHub.copilot-chat"
+            ]
+        }
+    },
+    "hostRequirements": {
+        "cpus": 4,
+        "memory": "16gb",
+        "storage": "32gb"
+    },
+    "mounts": [
+        "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind,consistency=cached"
+    ],
+    "postCreateCommand": "task deps",
+    "runArgs": [
+        "--cap-add=NET_ADMIN"
+    ]
+}
